@@ -1,22 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ParseResult, ChatTurn } from "@/lib/filename/publicTypes";
+import type { ParseResult } from "@/lib/filename/publicTypes";
 
-type Msg = {
-  role: "user" | "model";
-  text: string;
-  link?: { href: string; label: string };
-  tone?: "ok" | "err";
-};
-
-const GREETING =
-  "嗨 👋 我是收稿小幫手。請把你的印刷檔拖進來、或點下方按鈕選檔，我會先幫你檢查檔名格式；格式對了才會收檔並自動幫你開工單。";
+type Msg = { role: "user" | "model"; text: string; tone?: "ok" | "err" };
 
 const EXAMPLE = "069871_{(月匯)百陽廣告}_(78)20260625WG星雲AI地板90x100cmpvc+霧-1CCPVC720N10M.ai";
 
-export default function ChatUpload() {
-  const [msgs, setMsgs] = useState<Msg[]>([{ role: "model", text: GREETING }]);
+export default function ChatUpload({ sessionId, contactName }: { sessionId: string; contactName?: string }) {
+  const greeting = `${contactName ? contactName + "您好 👋 " : "您好 👋 "}請把印刷檔拖進來、或點下方按鈕選檔。我會先幫您檢查檔名格式；格式正確才會收件，格式不對我會告訴您怎麼修改。可以一次上傳多個檔案。`;
+  const [msgs, setMsgs] = useState<Msg[]>([{ role: "model", text: greeting }]);
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -26,8 +19,21 @@ export default function ChatUpload() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, busy]);
 
+  // 每次對話變動 → 記錄到後台案件（吞錯，不影響客戶）
+  function syncLog(all: Msg[]) {
+    void fetch("/api/session/log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId, messages: all.map((m) => ({ role: m.role, text: m.text })) }),
+    }).catch(() => {});
+  }
+
   function add(m: Msg) {
-    setMsgs((prev) => [...prev, m]);
+    setMsgs((prev) => {
+      const next = [...prev, m];
+      syncLog(next);
+      return next;
+    });
   }
 
   async function handleFile(file: File) {
@@ -50,43 +56,28 @@ export default function ChatUpload() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ fileName: file.name, result: v.result }),
         }).then((r) => r.json())) as { ok: boolean; reply?: string };
-        add({
-          role: "model",
-          tone: "err",
-          text: g.reply || "檔名格式不正確，請調整後再上傳一次。",
-        });
+        add({ role: "model", tone: "err", text: g.reply || "檔名格式不正確，請調整後再上傳一次。" });
         return;
       }
 
-      // 3) 檔名正確 → 真正上傳
-      add({ role: "model", tone: "ok", text: "檔名格式正確 ✅ 收檔中…" });
+      // 3) 檔名正確 → 真正上傳（帶 sessionId）
+      add({ role: "model", tone: "ok", text: "檔名格式正確 ✅ 收件中…" });
       const fd = new FormData();
       fd.append("file", file);
-      const up = (await fetch("/api/upload", { method: "POST", body: fd }).then((r) =>
-        r.json()
-      )) as {
+      fd.append("sessionId", sessionId);
+      const up = (await fetch("/api/upload", { method: "POST", body: fd }).then((r) => r.json())) as {
         ok: boolean;
-        orderId?: string;
-        orderNo?: string;
         error?: string;
-        productMatched?: boolean;
-        productName?: string;
       };
 
-      if (up.ok && up.orderId) {
-        const productLine = up.productName
-          ? up.productMatched
-            ? `\n商品：${up.productName}`
-            : `\n商品：${up.productName}（⚠ 非標準商品，已標記待人工確認）`
-          : "";
+      if (up.ok) {
         add({
           role: "model",
           tone: "ok",
-          text: `收檔完成，已建立工單 ${up.orderNo} 🎉${productLine}`,
-          link: { href: `/order/${up.orderId}`, label: "檢視 / 列印工單 →" },
+          text: `✅ 送件成功！已收到您的檔案（${file.name}），我們會盡快為您處理。若還有其他檔案，可以繼續上傳。`,
         });
       } else {
-        add({ role: "model", tone: "err", text: `收檔失敗（${up.error ?? "unknown"}），請稍後再試。` });
+        add({ role: "model", tone: "err", text: "收件失敗，請稍後再試一次。" });
       }
     } catch {
       add({ role: "model", tone: "err", text: "連線出了點問題，請稍後再試一次。" });
@@ -123,18 +114,16 @@ export default function ChatUpload() {
         transition: "border-color .15s",
       }}
     >
-      {/* header */}
       <div style={{ padding: "16px 20px", background: "#1c1c1e", color: "#fff", display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#2563eb,#06b6d4)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
           N
         </span>
         <div>
           <div style={{ fontWeight: 600, fontSize: 15 }}>印刷檔收稿小幫手</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,.66)", marginTop: 2 }}>檔名檢查 · 自動建工單</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,.66)", marginTop: 2 }}>檔名檢查 · 線上收件</div>
         </div>
       </div>
 
-      {/* messages */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: 18 }}>
         {msgs.map((m, i) => (
           <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", marginBottom: 12 }}>
@@ -153,13 +142,6 @@ export default function ChatUpload() {
               }}
             >
               {m.text}
-              {m.link && (
-                <div style={{ marginTop: 8 }}>
-                  <a href={m.link.href} style={{ fontWeight: 600 }}>
-                    {m.link.label}
-                  </a>
-                </div>
-              )}
             </div>
           </div>
         ))}
@@ -170,7 +152,6 @@ export default function ChatUpload() {
         )}
       </div>
 
-      {/* uploader */}
       <div style={{ borderTop: "1px solid rgba(0,0,0,.08)", padding: 14, background: "#fff" }}>
         <input
           ref={fileRef}
@@ -185,17 +166,7 @@ export default function ChatUpload() {
         <button
           onClick={() => fileRef.current?.click()}
           disabled={busy}
-          style={{
-            width: "100%",
-            border: "none",
-            borderRadius: 12,
-            padding: "13px 16px",
-            background: busy ? "#9db4e8" : "var(--brand)",
-            color: "#fff",
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: busy ? "default" : "pointer",
-          }}
+          style={{ width: "100%", border: "none", borderRadius: 12, padding: "13px 16px", background: busy ? "#9db4e8" : "var(--brand)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: busy ? "default" : "pointer" }}
         >
           📎 選擇印刷檔上傳（或拖曳檔案到這裡）
         </button>

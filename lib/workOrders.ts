@@ -24,6 +24,7 @@ export type WorkOrder = {
   file_ext: string | null;
   file_name: string;
   storage_path: string;
+  session_id: string | null;
   parsed: Segments | Record<string, unknown>;
   customer_no: string | null;
   customer_phone: string | null;
@@ -68,7 +69,8 @@ export async function createWorkOrder(
   s: Segments,
   fileName: string,
   storagePath: string,
-  product: ProductResolution
+  product: ProductResolution,
+  sessionId?: string | null
 ): Promise<{ id: string; order_no: string }> {
   const db = createAdminSupabase();
   if (!db) throw new Error("db_not_configured");
@@ -77,6 +79,7 @@ export async function createWorkOrder(
     .insert({
       file_name: fileName,
       storage_path: storagePath,
+      session_id: sessionId ?? null,
       parsed: s,
       serial: s.serial,
       payment_type: s.payment,
@@ -109,6 +112,18 @@ export async function getWorkOrder(id: string): Promise<WorkOrder | null> {
   const { data, error } = await db.from("work_orders").select("*").eq("id", id).single();
   if (error) return null;
   return data as WorkOrder;
+}
+
+/** 取某案件（session）底下的所有工單，新到舊。 */
+export async function getWorkOrdersBySession(sessionId: string): Promise<WorkOrder[]> {
+  const db = createAdminSupabase();
+  if (!db || !sessionId) return [];
+  const { data } = await db
+    .from("work_orders")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: false });
+  return (data as WorkOrder[]) ?? [];
 }
 
 /** 更新工單（只接受白名單欄位；空字串轉 null）。 */

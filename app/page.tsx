@@ -1,4 +1,4 @@
-import ChatUpload from "@/components/ai/ChatUpload";
+import IntakeFlow from "@/components/intake/IntakeFlow";
 
 export default function HomePage() {
   return (
@@ -6,13 +6,13 @@ export default function HomePage() {
       <div style={{ width: "100%", maxWidth: 560, textAlign: "center", marginBottom: 26 }}>
         <h1 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 10px", letterSpacing: 0.5 }}>印刷檔線上收稿</h1>
         <p style={{ fontSize: 15, color: "var(--muted)", lineHeight: 1.7, margin: 0 }}>
-          上傳前系統會自動檢查檔名格式。若格式不對，小幫手會引導你修正；
+          留下聯絡方式後即可上傳印刷檔。系統會自動檢查檔名格式，
           <br />
-          格式正確才收檔，並自動幫你建立一張工單。
+          若格式不對會引導您修正，格式正確才收件。
         </p>
       </div>
       <div style={{ width: "100%", maxWidth: 560 }}>
-        <ChatUpload />
+        <IntakeFlow />
       </div>
     </main>
   );

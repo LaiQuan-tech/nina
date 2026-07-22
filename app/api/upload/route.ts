@@ -3,13 +3,14 @@ import { parseFilename } from "@/lib/filename/parser";
 import { uploadPrintFile } from "@/lib/storage";
 import { createWorkOrder } from "@/lib/workOrders";
 import { lookupProduct } from "@/lib/productLookup";
+import { markSessionSubmitted } from "@/lib/intakeSessions";
 
 export const runtime = "nodejs";
 
 const MAX_BYTES = 50 * 1024 * 1024; // 50MB
 
-// POST multipart(file) → 伺服器端「再驗一次」parser（唯一真相，永不信任前端）
-// → 存 Storage → 建工單 → { ok, orderId, orderNo }
+// POST multipart(file, sessionId) → 伺服器端「再驗一次」parser（唯一真相，永不信任前端）
+// → 存 Storage → 建工單(關到案件) → 更新案件狀態 → 回客戶「送件成功」（不回工單資訊）
 export async function POST(req: Request) {
   let form: FormData;
   try {
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "bad_form" }, { status: 400 });
   }
   const file = form.get("file");
+  const sessionId = (form.get("sessionId") as string | null)?.trim() || null;
   if (!(file instanceof File)) {
     return NextResponse.json({ ok: false, error: "no_file" }, { status: 400 });
   }
@@ -37,23 +39,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "storage_failed" }, { status: 502 });
   }
 
-  // 用檔名末段商品碼查 ERP 商品主檔（soft：查不到仍收檔，工單標非標準商品）
+  // 用檔名末段商品碼查 ERP 商品主檔（soft：查不到仍收檔）
   const match = await lookupProduct(parsed.segments.spec);
   const product = match
     ? { productName: match.name, productCode: match.code, matched: true }
     : { productName: parsed.segments.productName, productCode: null, matched: false };
 
   try {
-    const order = await createWorkOrder(parsed.segments, file.name, path, product);
-    return NextResponse.json({
-      ok: true,
-      orderId: order.id,
-      orderNo: order.order_no,
-      productMatched: product.matched,
-      productName: product.productName,
-    });
+    await createWorkOrder(parsed.segments, file.name, path, product, sessionId);
   } catch (err) {
     console.error("[upload] createWorkOrder failed:", err);
     return NextResponse.json({ ok: false, error: "db_failed" }, { status: 502 });
   }
+
+  // 更新案件狀態（成功件數 +1）
+  if (sessionId) await markSessionSubmitted(sessionId, file.name);
+
+  // 客戶端只需知道「送件成功」+ 檔名，**不**回傳任何工單資訊
+  return NextResponse.json({ ok: true, fileName: file.name });
 }

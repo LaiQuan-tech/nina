@@ -27,7 +27,7 @@ export default function OrderEditForm({ order, className }: { order: WorkOrder; 
     setSaving(true);
     setSaved(false);
     try {
-      const res = await fetch(`/api/order/${order.id}`, {
+      const res = await fetch(`/api/admin/order/${order.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
