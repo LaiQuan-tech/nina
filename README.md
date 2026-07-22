@@ -1,6 +1,15 @@
 # Nina — 印刷檔線上收稿 · 檔名檢查 · 自動建工單
 
-客戶上傳印刷檔 → 系統檢查檔名格式 → 格式錯就引導客戶改檔名（**不收檔**）→ 格式正確才收檔（存 Supabase Storage）並自動用檔名拆解產生一張工單（存 DB、畫面可列印）。
+**客戶端**：一進站先填聯絡資訊（姓名/Email/手機）→ 上傳印刷檔 → 系統檢查檔名格式 → 格式錯 AI 引導改名（**不收檔**）→ 格式正確才收檔（存 Supabase Storage）。客戶只看到「送件成功／失敗」，**看不到工單**。可一次上傳多個檔。
+
+**管理後台**（`/admin`，多帳號密碼登入）：看每個收稿案件的聯絡資訊、完整對話紀錄、收件狀態，以及收件成功後自動建立的工單（可列印）。工單為內部文件，僅後台可見。
+
+## 客戶／後台流程
+
+- 客戶端：`app/page.tsx` → `components/intake/IntakeFlow.tsx`（ContactGate 聯絡表單 → ChatUpload 上傳）。案件與對話存 `intake_sessions`。
+- 收檔：`app/api/upload/route.ts` 伺服器端再驗檔名 → 存 storage → 建工單（關聯 `session_id`）→ 更新案件狀態；回客戶**只有** `{ok, fileName}`。
+- 後台：`/admin`（總覽）、`/admin/cases`（案件列表）、`/admin/cases/[id]`（聯絡卡＋對話＋工單清單）、`/admin/orders/[id]`（可列印工單）、`/admin/users`（管理員帳號）。
+- 認證：`lib/adminAuth.ts`（HMAC 簽章 cookie，Edge-safe）+ `lib/adminPassword.ts`（pbkdf2，Node）+ `middleware.ts` 閘門。多帳號在 `admin_users` 表；`node scripts/createAdmin.mjs <email> <password> [name]` 建帳號。
 
 ## 檔名命名規則
 
@@ -54,3 +63,4 @@ node scripts/importErp.mjs    # 把 supabase/erp_data/*.json 匯入參照表（�
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role（僅 server，勿加 `NEXT_PUBLIC_`） |
 | `GEMINI_API_KEY` | Gemini（選配，僅潤飾引導文字） |
+| `ADMIN_SESSION_SECRET` | 後台 HMAC 簽 cookie 密鑰（`openssl rand -hex 32`） |
