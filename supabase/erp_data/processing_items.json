@@ -1,0 +1,1194 @@
+[
+ {
+  "code": "AA001",
+  "name": "[01]打樣留底",
+  "subcategory_code": "Z001",
+  "unit": "張",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "M3365FG",
+  "name": "3M[3658G]護膜",
+  "subcategory_code": "Z001",
+  "unit": "公分",
+  "pricing_method": "1-才積",
+  "active": 1
+ },
+ {
+  "code": "ZA0000",
+  "name": "冷裱(3M8519膜)",
+  "subcategory_code": "Z001",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA00001",
+  "name": "冷裱(Avery940膜)",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0001",
+  "name": "冷裱(霧膜)",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA00011",
+  "name": "冷裱(細霧)",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0002",
+  "name": "冷裱(亮膜)",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA00022",
+  "name": "冷裱(抗UV膜)",
+  "subcategory_code": "Z001",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0003",
+  "name": "上膜_正面上膠",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA00031",
+  "name": "上膜_白色PVC",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA00032",
+  "name": "上膜_高遮蔽PVC",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0004",
+  "name": "裁造型-簡易",
+  "subcategory_code": "Z001",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0005",
+  "name": "裁造型-複雜",
+  "subcategory_code": "Z001",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA00051",
+  "name": "裁造型-中英文字（要估價）",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "1-才積",
+  "active": 1
+ },
+ {
+  "code": "ZA0006",
+  "name": "貼中空板後裁造型(簡易)",
+  "subcategory_code": "Z001",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0007",
+  "name": "裁小膜",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0008",
+  "name": "接圖",
+  "subcategory_code": "Z001",
+  "unit": "公分",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0009",
+  "name": "背面上膠",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0010",
+  "name": "銅扣",
+  "subcategory_code": "Z001",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0011",
+  "name": "蝴蝶夾",
+  "subcategory_code": "Z001",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA00111",
+  "name": "銅扣+蝴蝶夾",
+  "subcategory_code": "Z001",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0012",
+  "name": "裁V刀",
+  "subcategory_code": "Z001",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0013",
+  "name": "貼魔鬼沾",
+  "subcategory_code": "Z001",
+  "unit": "公分",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0014",
+  "name": "兩面合貼",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0015",
+  "name": "貼雙面膠",
+  "subcategory_code": "Z001",
+  "unit": "公分",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0016",
+  "name": "留白邊(請於備註輸入尺寸)",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0017",
+  "name": "代客貼工",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0018",
+  "name": "反包",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0019",
+  "name": "延伸底色(請於備註輸入尺寸)",
+  "subcategory_code": "Z001",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0020",
+  "name": "貼板",
+  "subcategory_code": "Z001",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0021",
+  "name": "配件加工",
+  "subcategory_code": "Z001",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0022",
+  "name": "噴切機台(適用pvc10張以上裁小模或裁型用)",
+  "subcategory_code": "Z001",
+  "unit": "片",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZA0023",
+  "name": "護貝",
+  "subcategory_code": "Z001",
+  "unit": "片",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0024",
+  "name": "四邊切齊",
+  "subcategory_code": "Z001",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0025",
+  "name": "1mm磁鐵(超過61cm要拼接)",
+  "subcategory_code": "Z001",
+  "unit": "片",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0026",
+  "name": "冷裱(地貼膜)",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0027",
+  "name": "冷裱(白板膜)",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZA0028",
+  "name": "冷裱(厚磅地貼膜)",
+  "subcategory_code": "Z001",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0001",
+  "name": "高週波壓邊",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZB0002",
+  "name": "包繩",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0003",
+  "name": "雙面帆布對折壓高週波",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB00031",
+  "name": "高週波(對折)",
+  "subcategory_code": "Z002",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB00032",
+  "name": "高週波壓布管",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0004",
+  "name": "對折車邊",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZB0005",
+  "name": "滾邊顏色",
+  "subcategory_code": "Z004",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0006",
+  "name": "對折車布管",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZB0007",
+  "name": "車布管",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0008",
+  "name": "挖防風孔",
+  "subcategory_code": "Z002",
+  "unit": "孔",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZB0009",
+  "name": "四角打孔",
+  "subcategory_code": "Z002",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0010",
+  "name": "打銅孔(30公分1孔)",
+  "subcategory_code": "Z002",
+  "unit": "孔",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0011",
+  "name": "打銅孔(45公分1孔)",
+  "subcategory_code": "Z002",
+  "unit": "孔",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0012",
+  "name": "打銅孔(60公分1孔)",
+  "subcategory_code": "Z002",
+  "unit": "孔",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0013",
+  "name": "打銅孔(依備註說明)",
+  "subcategory_code": "Z002",
+  "unit": "孔",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0014",
+  "name": "四邊留繩(四角各留150公分)",
+  "subcategory_code": "Z002",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0015",
+  "name": "四邊包黑色膠帶",
+  "subcategory_code": "Z002",
+  "unit": "條",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0016",
+  "name": "無接縫打燈片孔(30公分1洞)",
+  "subcategory_code": "Z002",
+  "unit": "孔",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB00160",
+  "name": "無接縫打燈片孔(20公分1洞)",
+  "subcategory_code": "Z002",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB00161",
+  "name": "無接縫打燈片孔(15公分1洞)",
+  "subcategory_code": "Z002",
+  "unit": "孔",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB00162",
+  "name": "無接縫打燈片孔(25公分1洞)",
+  "subcategory_code": "Z002",
+  "unit": "孔",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0017",
+  "name": "留白邊(請於備註輸入方向及尺寸)",
+  "subcategory_code": "Z002",
+  "unit": "公分",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0018",
+  "name": "兩面合車",
+  "subcategory_code": "Z002",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZB0019",
+  "name": "蝴蝶夾",
+  "subcategory_code": "Z002",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0020",
+  "name": "修補帆布",
+  "subcategory_code": "Z002",
+  "unit": "才",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0021",
+  "name": "打燈片孔(依備註說明)",
+  "subcategory_code": "Z002",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZB0022",
+  "name": "切齊(依備註說明)",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0023",
+  "name": "4邊反包",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0024",
+  "name": "延伸底色(請於備註輸入尺寸)",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0025",
+  "name": "不打洞",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0026",
+  "name": "裁造型",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZB0027",
+  "name": "包繩四角洞",
+  "subcategory_code": "Z002",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0000",
+  "name": "車布管(刀旗)",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0001",
+  "name": "車布管(車管洞)",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC00011",
+  "name": "車布環(日式關東旗)",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC00012",
+  "name": "會旗加工(車布管+車邊+綁繩)",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0002",
+  "name": "對車",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0003",
+  "name": "車邊",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0004",
+  "name": "廟旗車火龍邊(3X4尺內)",
+  "subcategory_code": "Z003",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0005",
+  "name": "廟旗車火龍邊(4X5尺內)",
+  "subcategory_code": "Z003",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0006",
+  "name": "銅扣",
+  "subcategory_code": "Z003",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0007",
+  "name": "蝴蝶夾",
+  "subcategory_code": "Z003",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC00071",
+  "name": "銅扣+蝴蝶夾",
+  "subcategory_code": "Z003",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC00072",
+  "name": "銅扣+帆布夾",
+  "subcategory_code": "Z003",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0008",
+  "name": "車魔鬼沾",
+  "subcategory_code": "Z003",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0009",
+  "name": "布條四角車繩(左右車繩)",
+  "subcategory_code": "Z003",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC00091",
+  "name": "布條四角車繩(四邊車邊留繩)",
+  "subcategory_code": "Z003",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0010",
+  "name": "布條四角車繩(長度依客戶要求)",
+  "subcategory_code": "Z003",
+  "unit": "公分",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0011",
+  "name": "布條包繩(上下車繩+留繩)",
+  "subcategory_code": "Z003",
+  "unit": "公分",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC00111",
+  "name": "布條包繩(上車繩+留繩)",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0012",
+  "name": "宮燈旗(車布管+留繩)",
+  "subcategory_code": "Z003",
+  "unit": "條",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0013",
+  "name": "錦旗車旗鬚",
+  "subcategory_code": "Z003",
+  "unit": "條",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0015",
+  "name": "兩面對車＋白布",
+  "subcategory_code": "Z003",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0016",
+  "name": "留白邊(請於備註輸入尺寸)",
+  "subcategory_code": "Z003",
+  "unit": "公分",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0017",
+  "name": "拼接",
+  "subcategory_code": "Z003",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0018",
+  "name": "布環",
+  "subcategory_code": "Z003",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0019",
+  "name": "綁繩",
+  "subcategory_code": "Z003",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0020",
+  "name": "兩面合車",
+  "subcategory_code": "Z003",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0021",
+  "name": "車2道線",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0022",
+  "name": "切齊（依備註說明）",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0023",
+  "name": "延伸底色(請於備註輸入尺寸)",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0024",
+  "name": "肩帶加工",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0025",
+  "name": "臂章加工",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0026",
+  "name": "門簾加工",
+  "subcategory_code": "Z003",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0027",
+  "name": "串旗加工",
+  "subcategory_code": "Z003",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZC0028",
+  "name": "火龍(火焰)旗加工",
+  "subcategory_code": "Z003",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZD0001",
+  "name": "車魔鬼沾",
+  "subcategory_code": "Z004",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZD0002",
+  "name": "車口袋(同布顏色)",
+  "subcategory_code": "Z004",
+  "unit": "個",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZD0003",
+  "name": "車綁繩",
+  "subcategory_code": "Z004",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZD0004",
+  "name": "車反光條",
+  "subcategory_code": "Z004",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0001",
+  "name": "加購繩子",
+  "subcategory_code": "Z999",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0002",
+  "name": "其他客製品加工",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0003",
+  "name": "美工處理費",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0004",
+  "name": "運送處理費",
+  "subcategory_code": "Z999",
+  "unit": "件",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0005",
+  "name": "版費",
+  "subcategory_code": "Z999",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0005-1",
+  "name": "彩色版費3X9",
+  "subcategory_code": "Z999",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZE0005-2",
+  "name": "彩色版費3X12",
+  "subcategory_code": "Z999",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZE0005-3",
+  "name": "彩色版費2X4",
+  "subcategory_code": "Z999",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZE0005-4",
+  "name": "彩色版費3X3",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZE0005-5",
+  "name": "彩色版費2X2",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZE0006",
+  "name": "訂木框",
+  "subcategory_code": "Z999",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0007",
+  "name": "包裝費",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0008",
+  "name": "網印改版費",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 0
+ },
+ {
+  "code": "ZE0009",
+  "name": "穿鐵絲",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0010",
+  "name": "A字牌加工",
+  "subcategory_code": "Z999",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0011",
+  "name": "手舉牌加工",
+  "subcategory_code": "Z999",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0012",
+  "name": "指示牌加工",
+  "subcategory_code": "Z999",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0013",
+  "name": "無框畫加工(4邊出血7cm)",
+  "subcategory_code": "Z999",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZE0014",
+  "name": "無框畫加工(4邊出血8cm)",
+  "subcategory_code": "Z999",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF0001",
+  "name": "帆布掛工",
+  "subcategory_code": "Z005",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF0002",
+  "name": "帆布拆工",
+  "subcategory_code": "Z005",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF0003",
+  "name": "PVC貼圖施工",
+  "subcategory_code": "Z005",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF0005",
+  "name": "吊車費",
+  "subcategory_code": "Z005",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF0006",
+  "name": "路燈旗施工",
+  "subcategory_code": "Z005",
+  "unit": "組",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF0007",
+  "name": "帆布拆+掛",
+  "subcategory_code": "Z005",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF004",
+  "name": "施工費",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF005",
+  "name": "加工費",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF3F001",
+  "name": "考克+拉鍊",
+  "subcategory_code": "Z999",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZF3F002",
+  "name": "考克+充綿孔",
+  "subcategory_code": "Z999",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZG0001",
+  "name": "四邊延伸底色留3CM留白7CM",
+  "subcategory_code": "Z006",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZG0002",
+  "name": "四邊車3CM管洞",
+  "subcategory_code": "Z006",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZG0003",
+  "name": "無接縫布管加工(4邊各加底3+白3+白4)",
+  "subcategory_code": "Z006",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZH0001",
+  "name": "UV直噴彩色",
+  "subcategory_code": "Z007",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZH0002",
+  "name": "UV直噴彩色+白色",
+  "subcategory_code": "Z007",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZH0003",
+  "name": "UV直噴彩色+白色+彩色",
+  "subcategory_code": "Z007",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZH0004",
+  "name": "UV直噴多層堆疊",
+  "subcategory_code": "Z007",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZH0005",
+  "name": "UV直噴白色",
+  "subcategory_code": "Z007",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZH0006",
+  "name": "燈布加工(車壓條)",
+  "subcategory_code": "Z007",
+  "unit": "面",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZH0007",
+  "name": "客戶自備材料(請備註)",
+  "subcategory_code": "Z007",
+  "unit": null,
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZZMF001",
+  "name": "包繩+4角打洞",
+  "subcategory_code": "MA201",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ },
+ {
+  "code": "ZZMF002",
+  "name": "包繩+1尺1洞",
+  "subcategory_code": "MA201",
+  "unit": "式",
+  "pricing_method": "0-數量",
+  "active": 1
+ }
+]

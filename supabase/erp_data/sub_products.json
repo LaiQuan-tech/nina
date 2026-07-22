@@ -1,0 +1,968 @@
+[
+ {
+  "sort": 1000,
+  "main_product_name": null,
+  "code": "999999",
+  "name": "物料"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "A0001",
+  "name": "室內水性輸出"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "A0002",
+  "name": "戶外油性輸出"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "A0003",
+  "name": "EPSON環保墨輸出"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "A0004",
+  "name": "乳膠環保墨輸出"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "A0005",
+  "name": "油性布類輸出"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "帆布輸出",
+  "code": "A0006",
+  "name": "一般帆布"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "帆布輸出",
+  "code": "A0007",
+  "name": "洞洞帆布"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "帆布輸出",
+  "code": "A0008",
+  "name": "阻光帆布"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "帆布輸出",
+  "code": "A0009",
+  "name": "無接縫帆布"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "帆布輸出",
+  "code": "A0010",
+  "name": "無網格帆布"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "旗幟印刷",
+  "code": "A0011",
+  "name": "直立旗、刀旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "旗幟印刷",
+  "code": "A0012",
+  "name": "路燈旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "旗幟印刷",
+  "code": "A0013",
+  "name": "彩色錦旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "旗幟印刷",
+  "code": "A0014",
+  "name": "手拿旗、領隊旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "旗幟印刷",
+  "code": "A0015",
+  "name": "桌上旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "旗幟印刷",
+  "code": "A0016",
+  "name": "彩色布條"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "旗幟印刷",
+  "code": "A0017",
+  "name": "串旗、萬國旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "旗幟印刷",
+  "code": "A0018",
+  "name": "會旗、廟旗、火龍戰旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "熱昇華",
+  "code": "A0019",
+  "name": "熱昇華布類"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "號碼布",
+  "code": "A0020",
+  "name": "號碼布"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "背心、臂章、肩帶",
+  "code": "A0021",
+  "name": "背心"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "背心、臂章、肩帶",
+  "code": "A0022",
+  "name": "臂章"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "背心、臂章、肩帶",
+  "code": "A0023",
+  "name": "肩帶"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0024",
+  "name": "帽子"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0025",
+  "name": "衣服、帽子印刷代工"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0026",
+  "name": "純棉短袖圓T"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0027",
+  "name": "純棉長袖圓T"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0028",
+  "name": "純棉兒童圓T"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0029",
+  "name": "純棉修身女T"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0030",
+  "name": "純棉短袖V領T恤"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0031",
+  "name": "吸濕排汗短袖圓T"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0032",
+  "name": "吸濕排汗POLO衫"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "衣服、團體服、帽子",
+  "code": "A0033",
+  "name": "POLO衫(CVC)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "熱昇華",
+  "code": "A0034",
+  "name": "熱昇華布類雙噴"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "UV機直噴",
+  "code": "B0001",
+  "name": "軟材UV直噴(整捲，可噴白墨)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "UV機直噴",
+  "code": "B0002",
+  "name": "平面板材UV直噴(可噴白墨)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "UV機直噴代工",
+  "code": "B0003",
+  "name": "UV直噴代工(客自備軟材、板材)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "無框畫",
+  "code": "B0004",
+  "name": "一般油畫布無框畫"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "無框畫",
+  "code": "B0005",
+  "name": "一般油畫布無框畫(圖背面含木板)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "無框畫",
+  "code": "B0006",
+  "name": "純棉油畫布無框畫"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "無框畫",
+  "code": "B0007",
+  "name": "純棉油畫布無框畫(圖背含木板)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "A字牌、手舉牌、告示牌",
+  "code": "B0008",
+  "name": "A字牌"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "A字牌、手舉牌、告示牌",
+  "code": "B0009",
+  "name": "手舉牌"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "A字牌、手舉牌、告示牌",
+  "code": "B0010",
+  "name": "指示牌、告示牌"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "網版印刷",
+  "code": "B0011",
+  "name": "網印旗幟、布條"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "網版印刷",
+  "code": "B0012",
+  "name": "網印板材"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "網版印刷",
+  "code": "B0013",
+  "name": "網版印刷代工(自備材料)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0014",
+  "name": "保麗龍立體字"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0015",
+  "name": "透明水晶字"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0016",
+  "name": "導角水晶字"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0017",
+  "name": "導角鏡面字"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0018",
+  "name": "鏡面水晶字"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0019",
+  "name": "海報夾板"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0020",
+  "name": "阿蘭諾+泡棉"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0021",
+  "name": "壓克力+泡棉"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0022",
+  "name": "噴漆字"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0023",
+  "name": "密集板"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0024",
+  "name": "發泡板"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0025",
+  "name": "塑鋁板/阿蘭諾"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "立體字",
+  "code": "B0026",
+  "name": "壓克力雕刻"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "選舉專區",
+  "code": "B0027",
+  "name": "大圖輸出/廣告帆布/旗幟"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "選舉專區",
+  "code": "B0028",
+  "name": "客製商品"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "熱轉印",
+  "code": "B0029",
+  "name": "紙轉印"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "熱轉印",
+  "code": "B0030",
+  "name": "膠轉印"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "熱轉印",
+  "code": "B0031",
+  "name": "雷射轉印"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "熱轉印",
+  "code": "B0032",
+  "name": "直噴轉印"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "紡織轉印直噴材料",
+  "code": "C",
+  "name": "適用轉印布匹(幅寬145-150CM)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "布類印刷代工",
+  "code": "C0001",
+  "name": "布花轉印代工(自備材料)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "布類印刷代工",
+  "code": "C0002",
+  "name": "衣服裁片(自備材料)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "平面設計美編",
+  "code": "C0003",
+  "name": "代客平面設計編排"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "配件批發/零售",
+  "code": "C0004",
+  "name": "大圖輸出配件批發/零售"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "配件批發/零售",
+  "code": "C0005",
+  "name": "旗幟配件批發/零售"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "配件批發/零售",
+  "code": "C0006",
+  "name": "板材批發/零售"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "切割裁型代工",
+  "code": "C0007",
+  "name": "切割裁型代工(自備材料及刀模檔)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0008",
+  "name": "抱枕"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0009",
+  "name": "頭巾"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0010",
+  "name": "環保提帶"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0011",
+  "name": "馬克杯"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0012",
+  "name": "陶瓷杯墊"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0013",
+  "name": "扇子"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0014",
+  "name": "束口袋/束口袋背包"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0015",
+  "name": "廣告筆"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0016",
+  "name": "軟性造型磁鐵"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "文創商品、禮贈品製作",
+  "code": "C0017",
+  "name": "紡織品"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "急件專區",
+  "code": "D0001",
+  "name": "4小時急件大圖輸出"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "急件專區",
+  "code": "D0002",
+  "name": "6小時急件旗幟輸出"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "紡織轉印直噴材料",
+  "code": "E",
+  "name": "T恤/外套/成品衣"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0001",
+  "name": "名片"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0002",
+  "name": "DM海報類"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0003",
+  "name": "貼紙類"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0004",
+  "name": "型錄、書冊類"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0005",
+  "name": "信封、信紙類"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0006",
+  "name": "桌曆"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0007",
+  "name": "年曆"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0008",
+  "name": "酷卡/明信片"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0009",
+  "name": "邀請卡/請柬/喜帖"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0010",
+  "name": "吊卡"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0011",
+  "name": "貴賓卡"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "數位平面印刷品",
+  "code": "E0012",
+  "name": "聯單表格類"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0006",
+  "name": "輸出-布類"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0007",
+  "name": "輸出-布旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": null,
+  "code": "T0008",
+  "name": "輸出-製品"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0009",
+  "name": "輸出-公車"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0009-1",
+  "name": "網版-指示牌(工地用)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0010",
+  "name": "網版_背心"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0011",
+  "name": "網版-布條"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0012",
+  "name": "網版-布旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0013",
+  "name": "網版_手拿旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0014",
+  "name": "配件-板材"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0016",
+  "name": "配件-展示架"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0017",
+  "name": "配件-燈箱"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0018",
+  "name": "配件-畫框"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0019",
+  "name": "配件-LED"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0020",
+  "name": "配件-掛軸"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0021",
+  "name": "其他-(割字.代客加工.單購材料等)"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "T0022",
+  "name": "輸出-手拿旗"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "Z001",
+  "name": "海報加工"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "Z002",
+  "name": "帆布加工"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "Z003",
+  "name": "旗幟加工"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "Z004",
+  "name": "背心加工"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "Z005",
+  "name": "施工費"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": null,
+  "code": "Z006",
+  "name": "無接縫加工"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "Z007",
+  "name": "UV加工"
+ },
+ {
+  "sort": 1000,
+  "main_product_name": "大圖輸出",
+  "code": "Z999",
+  "name": "其他加工"
+ },
+ {
+  "sort": 1801,
+  "main_product_name": "油性大圖輸出類",
+  "code": "M0001",
+  "name": "PP相紙類"
+ },
+ {
+  "sort": 1802,
+  "main_product_name": "油性大圖輸出類",
+  "code": "M0002",
+  "name": "PVC貼紙類"
+ },
+ {
+  "sort": 1803,
+  "main_product_name": "油性大圖輸出類",
+  "code": "M0003",
+  "name": "透光貼紙類"
+ },
+ {
+  "sort": 1804,
+  "main_product_name": "油性大圖輸出類",
+  "code": "M0004",
+  "name": "燈片類"
+ },
+ {
+  "sort": 1805,
+  "main_product_name": "油性大圖輸出類",
+  "code": "M0005",
+  "name": "油性布類"
+ },
+ {
+  "sort": 1806,
+  "main_product_name": "油性大圖輸出類",
+  "code": "M0006",
+  "name": "3M材料類"
+ },
+ {
+  "sort": 1807,
+  "main_product_name": "油性大圖輸出類",
+  "code": "M0007",
+  "name": "艾利材料類"
+ },
+ {
+  "sort": 1808,
+  "main_product_name": "油性大圖輸出類",
+  "code": "M0008",
+  "name": "特殊材質類"
+ },
+ {
+  "sort": 1809,
+  "main_product_name": "水性大圖輸出類",
+  "code": "M0101",
+  "name": "水性PP相紙、海報紙類"
+ },
+ {
+  "sort": 1810,
+  "main_product_name": "水性大圖輸出類",
+  "code": "M0102",
+  "name": "水性背膠PVC貼紙類"
+ },
+ {
+  "sort": 1811,
+  "main_product_name": "水性大圖輸出類",
+  "code": "M0103",
+  "name": "HP乳膠油墨類"
+ },
+ {
+  "sort": 1812,
+  "main_product_name": "帆布輸出類",
+  "code": "M0201",
+  "name": "一般帆布類"
+ },
+ {
+  "sort": 1813,
+  "main_product_name": "帆布輸出類",
+  "code": "M0202",
+  "name": "透風帆布"
+ },
+ {
+  "sort": 1814,
+  "main_product_name": "帆布輸出類",
+  "code": "M0203",
+  "name": "阻光帆布類"
+ },
+ {
+  "sort": 1821,
+  "main_product_name": "文創商品類",
+  "code": "M0301",
+  "name": "無框畫彩色直噴"
+ },
+ {
+  "sort": 1851,
+  "main_product_name": "帆布輸出類",
+  "code": "MA201",
+  "name": "帆布加工"
+ },
+ {
+  "sort": 8001,
+  "main_product_name": "工美企業社",
+  "code": "N0001",
+  "name": "合成板(採購用)"
+ },
+ {
+  "sort": 8002,
+  "main_product_name": "工美企業社",
+  "code": "N0002",
+  "name": "豪卡板(採購用)"
+ },
+ {
+  "sort": 8003,
+  "main_product_name": "工美企業社",
+  "code": "N0003",
+  "name": "強光板(採購用)"
+ },
+ {
+  "sort": 8004,
+  "main_product_name": "工美企業社",
+  "code": "N0004",
+  "name": "發泡板(採購用)"
+ },
+ {
+  "sort": 8005,
+  "main_product_name": "工美企業社",
+  "code": "N0005",
+  "name": "珍珠板(採購用)"
+ },
+ {
+  "sort": 8006,
+  "main_product_name": "工美企業社",
+  "code": "N0006",
+  "name": "展架類(採購用)"
+ },
+ {
+  "sort": 8007,
+  "main_product_name": "工美企業社",
+  "code": "N0007",
+  "name": "紙腳架類(採購用)"
+ },
+ {
+  "sort": 8008,
+  "main_product_name": "工美企業社",
+  "code": "N0008",
+  "name": "配件類(採購用)"
+ },
+ {
+  "sort": 8101,
+  "main_product_name": "台灣聚益",
+  "code": "N1001",
+  "name": "油性貼紙類"
+ },
+ {
+  "sort": 8102,
+  "main_product_name": "台灣聚益",
+  "code": "N1002",
+  "name": "PP相紙，燈片類"
+ },
+ {
+  "sort": 8103,
+  "main_product_name": "台灣聚益",
+  "code": "N1003",
+  "name": "水性材料類"
+ },
+ {
+  "sort": 8104,
+  "main_product_name": "台灣聚益",
+  "code": "N1004",
+  "name": "護貝膜類"
+ },
+ {
+  "sort": 8105,
+  "main_product_name": "台灣聚益",
+  "code": "N1005",
+  "name": "艾利材料類"
+ },
+ {
+  "sort": 8106,
+  "main_product_name": "台灣聚益",
+  "code": "N1006",
+  "name": "無接縫帆布類"
+ },
+ {
+  "sort": 8107,
+  "main_product_name": "台灣聚益",
+  "code": "N1007",
+  "name": "特殊材料類"
+ },
+ {
+  "sort": 8108,
+  "main_product_name": "台灣聚益",
+  "code": "N1008",
+  "name": "MIMAKI墨水"
+ },
+ {
+  "sort": 8109,
+  "main_product_name": "台灣聚益",
+  "code": "N1009",
+  "name": "HP墨水"
+ },
+ {
+  "sort": 8110,
+  "main_product_name": "台灣聚益",
+  "code": "N1010",
+  "name": "EPSON墨水"
+ },
+ {
+  "sort": 8111,
+  "main_product_name": "台灣聚益",
+  "code": "N1011",
+  "name": "恩德A_JET_墨水"
+ },
+ {
+  "sort": 8112,
+  "main_product_name": "台灣聚益",
+  "code": "N1012",
+  "name": "噴頭，零件類"
+ }
+]

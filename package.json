@@ -1,0 +1,26 @@
+{
+  "name": "nina",
+  "version": "1.0.0",
+  "private": true,
+  "description": "印刷檔名驗證 + 自動產工單 — 客戶上傳印刷檔，AI 引導改檔名，格式正確才收檔並自動建立工單",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test:parser": "node --import tsx --test lib/filename/parser.test.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "next": "^14.2.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.11",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
