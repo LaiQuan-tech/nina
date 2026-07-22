@@ -1,13 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { saveContact, clearContact } from "@/components/intake/contactStorage";
 
 export type Contact = { name: string; email: string; phone: string };
 
 // 收稿前的聯絡資訊表單：姓名/Email/手機（三欄必填）。
 // 送出 → 產 sessionId + POST /api/session 建案件 → onReady(sessionId, contact)。
-export default function ContactGate({ onReady }: { onReady: (sessionId: string, contact: Contact) => void }) {
-  const [form, setForm] = useState<Contact>({ name: "", email: "", phone: "" });
+// 勾「記住」→ 存 localStorage，下次直接跳「歡迎回來」免再填。
+export default function ContactGate({
+  onReady,
+  initial,
+}: {
+  onReady: (sessionId: string, contact: Contact) => void;
+  initial?: Contact | null;
+}) {
+  const [form, setForm] = useState<Contact>(initial ?? { name: "", email: "", phone: "" });
+  const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +49,8 @@ export default function ContactGate({ onReady }: { onReady: (sessionId: string, 
       });
       const data = await res.json();
       if (data.ok) {
+        if (remember) saveContact(form);
+        else clearContact();
         onReady(sessionId, form);
       } else {
         setError("送出失敗，請確認資料後再試一次。");
@@ -75,6 +86,10 @@ export default function ContactGate({ onReady }: { onReady: (sessionId: string, 
           />
         </label>
       ))}
+      <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 0 14px", cursor: "pointer", userSelect: "none" }}>
+        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} style={{ width: 16, height: 16, cursor: "pointer" }} />
+        <span style={{ fontSize: 13.5, color: "var(--ink)" }}>記住我的聯絡資訊（下次免再填）</span>
+      </label>
       {error && (
         <div style={{ fontSize: 13.5, color: "var(--err)", background: "#fdecea", padding: "9px 13px", borderRadius: 9, marginBottom: 12 }}>{error}</div>
       )}
