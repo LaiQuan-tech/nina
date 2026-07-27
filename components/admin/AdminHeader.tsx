@@ -20,7 +20,7 @@ export default function AdminHeader() {
   return (
     <header style={{ background: "#1c1c1e", color: "#fff", padding: "0 20px", position: "sticky", top: 0, zIndex: 20 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", height: 56, display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontWeight: 700, fontSize: 15, marginRight: 12 }}>美強光印刷 · 收稿後台</span>
+        <span style={{ fontWeight: 700, fontSize: 15, marginRight: 12 }}>美強光廣告科技 · 收稿後台</span>
         <nav style={{ display: "flex", gap: 4, flex: 1 }}>
           {NAV.map((n) => {
             const active = n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href);
