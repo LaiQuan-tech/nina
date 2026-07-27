@@ -39,7 +39,7 @@ function LoginForm() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <form onSubmit={submit} style={{ width: "100%", maxWidth: 360, background: "#fff", borderRadius: 20, padding: 32, boxShadow: "0 8px 30px rgba(20,40,80,.1)" }}>
-        <div style={{ fontWeight: 700, fontSize: 18, color: "#1c1c1e", marginBottom: 4 }}>印刷收稿 · 管理後台</div>
+        <div style={{ fontWeight: 700, fontSize: 18, color: "#1c1c1e", marginBottom: 4 }}>美強光印刷 · 管理後台</div>
         <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 20px" }}>請以管理員帳號登入。</p>
         <input
           type="email"

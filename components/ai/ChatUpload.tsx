@@ -119,7 +119,7 @@ export default function ChatUpload({ sessionId, contactName }: { sessionId: stri
           N
         </span>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 15 }}>印刷檔收稿小幫手</div>
+          <div style={{ fontWeight: 600, fontSize: 15 }}>美強光印刷 · 收稿小幫手</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,.66)", marginTop: 2 }}>檔名檢查 · 線上收件</div>
         </div>
       </div>
