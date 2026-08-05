@@ -20,7 +20,15 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
           <a href={backHref} style={{ fontSize: 14, fontWeight: 600 }}>
             ← 回後台
           </a>
-          <PrintButton />
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <a
+              href={`/api/admin/order/${order.id}/download`}
+              style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: "9px 16px", background: "#fff", color: "#1c1c1e", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+            >
+              ⬇️ 下載印刷檔
+            </a>
+            <PrintButton />
+          </div>
         </div>
 
         <WorkOrderSheet order={order} />

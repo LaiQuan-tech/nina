@@ -57,20 +57,30 @@ export async function uploadPrintFile(
 }
 
 /**
- * 產印刷檔下載用簽名 URL（預設效期 3600 秒）。
+ * 產印刷檔下載用簽名 URL（限時，預設 600 秒）。
+ * downloadName 有給時，瀏覽器會以該檔名下載（用來還原含中文的原始檔名，
+ * 因為 storage 內的路徑是淨化過的安全檔名）。
  * 路徑不存在／bucket 出錯 → 回 null 不 throw。
  */
-export async function signedPrintUrl(storagePath: string, expiresInSec?: number): Promise<string | null> {
+export async function signedPrintUrl(
+  storagePath: string,
+  expiresInSec?: number,
+  downloadName?: string
+): Promise<string | null> {
   const supabase = createAdminSupabase();
   if (!supabase || !storagePath) return null;
   const expires =
     expiresInSec !== undefined && Number.isFinite(expiresInSec) && expiresInSec > 0
       ? Math.floor(expiresInSec)
-      : 3600;
+      : 600;
   try {
     const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(storagePath, expires);
     if (error || !data?.signedUrl) return null;
-    return data.signedUrl;
+    if (!downloadName) return data.signedUrl;
+    // 注意：不要用 SDK 的 { download } 選項——它會把檔名多編碼一次，
+    // 瀏覽器最後拿到的是 %257B 這種雙重編碼亂碼。手動附加才會正確還原中文檔名。
+    const sep = data.signedUrl.includes("?") ? "&" : "?";
+    return `${data.signedUrl}${sep}download=${encodeURIComponent(downloadName)}`;
   } catch {
     return null;
   }

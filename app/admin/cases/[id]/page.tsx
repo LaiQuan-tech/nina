@@ -66,20 +66,32 @@ export default async function CaseDetailPage({ params }: { params: { id: string 
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {orders.map((o) => (
-                <a
+                <div
                   key={o.id}
-                  href={`/admin/orders/${o.id}`}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 14px", border: "1px solid #eef0f3", borderRadius: 10, textDecoration: "none", color: "#1c1c1e" }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 14px", border: "1px solid #eef0f3", borderRadius: 10, color: "#1c1c1e", flexWrap: "wrap" }}
                 >
-                  <div>
+                  <div style={{ minWidth: 200, flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 14 }}>
                       {o.order_no} · {o.product_name || o.material_raw || ""}
                       {!o.product_matched && <span style={{ color: "#b45309", marginLeft: 8, fontSize: 12 }}>⚠ 非標準商品</span>}
                     </div>
                     <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2, wordBreak: "break-all" }}>{o.file_name}</div>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#2563eb", flexShrink: 0 }}>檢視 / 列印 →</span>
-                </a>
+                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    <a
+                      href={`/api/admin/order/${o.id}/download`}
+                      style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e", border: "1px solid #d1d5db", borderRadius: 8, padding: "6px 12px", textDecoration: "none" }}
+                    >
+                      ⬇️ 下載檔案
+                    </a>
+                    <a
+                      href={`/admin/orders/${o.id}`}
+                      style={{ fontSize: 13, fontWeight: 600, color: "#2563eb", border: "1px solid #dbe4f5", borderRadius: 8, padding: "6px 12px", textDecoration: "none" }}
+                    >
+                      檢視 / 列印 →
+                    </a>
+                  </div>
+                </div>
               ))}
             </div>
           )}

@@ -36,9 +36,25 @@ export default function ChatUpload({ sessionId, contactName }: { sessionId: stri
     });
   }
 
-  async function handleFile(file: File) {
-    if (busy) return;
+  // 一批檔案依序處理（單一 busy 鎖，避免同時上傳互相打架）
+  async function handleFiles(list: FileList | null) {
+    if (busy || !list || list.length === 0) return;
+    const files = Array.from(list);
     setBusy(true);
+    try {
+      if (files.length > 1) {
+        add({ role: "model", text: `收到 ${files.length} 個檔案，我依序幫您檢查 👀` });
+      }
+      for (const f of files) {
+        await processFile(f);
+      }
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function processFile(file: File) {
     add({ role: "user", text: `📄 ${file.name}` });
 
     try {
@@ -81,17 +97,13 @@ export default function ChatUpload({ sessionId, contactName }: { sessionId: stri
       }
     } catch {
       add({ role: "model", tone: "err", text: "連線出了點問題，請稍後再試一次。" });
-    } finally {
-      setBusy(false);
-      if (fileRef.current) fileRef.current.value = "";
     }
   }
 
   function onDrop(e: React.DragEvent) {
     e.preventDefault();
     setDragOver(false);
-    const f = e.dataTransfer.files?.[0];
-    if (f) void handleFile(f);
+    void handleFiles(e.dataTransfer.files);
   }
 
   return (
@@ -157,18 +169,16 @@ export default function ChatUpload({ sessionId, contactName }: { sessionId: stri
           ref={fileRef}
           type="file"
           hidden
+          multiple
           accept=".ai,.pdf,.eps,.psd,.tif,.tiff,.jpg,.jpeg,.png"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void handleFile(f);
-          }}
+          onChange={(e) => void handleFiles(e.target.files)}
         />
         <button
           onClick={() => fileRef.current?.click()}
           disabled={busy}
           style={{ width: "100%", border: "none", borderRadius: 12, padding: "13px 16px", background: busy ? "#9db4e8" : "var(--brand)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: busy ? "default" : "pointer" }}
         >
-          📎 選擇印刷檔上傳（或拖曳檔案到這裡）
+          📎 選擇印刷檔上傳（可多選，或拖曳檔案到這裡）
         </button>
         <div style={{ fontSize: 11.5, color: "var(--muted)", textAlign: "center", marginTop: 9, lineHeight: 1.6 }}>
           正確檔名範例：
