@@ -114,77 +114,49 @@ export default function ChatUpload({ sessionId, contactName }: { sessionId: stri
       }}
       onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "min(72vh, 640px)",
-        background: "var(--panel)",
-        borderRadius: 18,
-        boxShadow: "0 12px 40px rgba(20,40,80,.10)",
-        overflow: "hidden",
-        border: dragOver ? "2px dashed var(--brand)" : "2px solid transparent",
-        transition: "border-color .15s",
-      }}
+      style={{ border: dragOver ? "2px dashed var(--s-red)" : "2px solid transparent", padding: dragOver ? 6 : 0, transition: "border-color .15s" }}
     >
-      <div style={{ padding: "16px 20px", background: "#1c1c1e", color: "#fff", display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#2563eb,#06b6d4)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
-          N
-        </span>
-        <div>
-          <div style={{ fontWeight: 600, fontSize: 15 }}>美強光廣告科技 · 收稿小幫手</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,.66)", marginTop: 2 }}>檔名檢查 · 線上收件</div>
-        </div>
-      </div>
-
-      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: 18 }}>
+      <div
+        ref={scrollRef}
+        style={{ maxHeight: 300, overflowY: "auto", marginBottom: 14, paddingRight: 2 }}
+      >
         {msgs.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", marginBottom: 12 }}>
-            <div
-              style={{
-                maxWidth: "86%",
-                padding: "11px 15px",
-                borderRadius: 15,
-                fontSize: 14.5,
-                lineHeight: 1.65,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-                background: m.role === "user" ? "var(--brand)" : m.tone === "err" ? "#fff4f4" : m.tone === "ok" ? "#f0fdf4" : "#f2f4f7",
-                color: m.role === "user" ? "#fff" : "var(--ink)",
-                border: m.tone === "err" ? "1px solid #fbd0d0" : m.tone === "ok" ? "1px solid #bbf7d0" : "none",
-              }}
-            >
-              {m.text}
-            </div>
+          <div
+            key={i}
+            className={`s-bub${m.role === "user" ? " me" : ""}`}
+            style={{
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              ...(m.tone === "err"
+                ? { background: "#fff", border: "2px solid var(--s-red)", color: "var(--s-red-deep)" }
+                : m.tone === "ok"
+                  ? { background: "var(--s-ink)", color: "var(--s-bg)" }
+                  : {}),
+            }}
+          >
+            {m.text}
           </div>
         ))}
         {busy && (
-          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 12 }}>
-            <div style={{ padding: "11px 15px", borderRadius: 15, background: "#f2f4f7", color: "var(--muted)", fontSize: 14 }}>處理中…</div>
+          <div className="s-bub" style={{ color: "var(--s-dim)" }}>
+            處理中…
           </div>
         )}
       </div>
 
-      <div style={{ borderTop: "1px solid rgba(0,0,0,.08)", padding: 14, background: "#fff" }}>
-        <input
-          ref={fileRef}
-          type="file"
-          hidden
-          multiple
-          accept=".ai,.pdf,.eps,.psd,.tif,.tiff,.jpg,.jpeg,.png"
-          onChange={(e) => void handleFiles(e.target.files)}
-        />
-        <button
-          onClick={() => fileRef.current?.click()}
-          disabled={busy}
-          style={{ width: "100%", border: "none", borderRadius: 12, padding: "13px 16px", background: busy ? "#9db4e8" : "var(--brand)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: busy ? "default" : "pointer" }}
-        >
-          📎 選擇印刷檔上傳（可多選，或拖曳檔案到這裡）
-        </button>
-        <div style={{ fontSize: 11.5, color: "var(--muted)", textAlign: "center", marginTop: 9, lineHeight: 1.6 }}>
-          正確檔名範例：
-          <br />
-          <code style={{ fontSize: 11, wordBreak: "break-all" }}>{EXAMPLE}</code>
-        </div>
+      <input
+        ref={fileRef}
+        type="file"
+        hidden
+        multiple
+        accept=".ai,.pdf,.eps,.psd,.tif,.tiff,.jpg,.jpeg,.png"
+        onChange={(e) => void handleFiles(e.target.files)}
+      />
+      <button onClick={() => fileRef.current?.click()} disabled={busy} className="s-btn s-btn-primary" style={{ width: "100%" }}>
+        📎 選擇印刷檔上傳（可多選，或拖曳到這裡）
+      </button>
+      <div className="s-mono" style={{ fontSize: 10, color: "var(--s-faint)", marginTop: 9, lineHeight: 1.6, wordBreak: "break-all" }}>
+        正確檔名範例：{EXAMPLE}
       </div>
     </div>
   );

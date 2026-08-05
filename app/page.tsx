@@ -1,20 +1,25 @@
-import IntakeFlow from "@/components/intake/IntakeFlow";
+import SiteHeader from "@/components/site/SiteHeader";
+import Hero from "@/components/site/Hero";
+import Services from "@/components/site/Services";
+import QuoteWizard from "@/components/site/QuoteWizard";
+import Works from "@/components/site/Works";
+import Oem from "@/components/site/Oem";
+import SiteFooter from "@/components/site/SiteFooter";
 
+// 美強光廣告科技 官方網站（A 版）
+// 單頁 + 錨點導覽：Hero → 服務項目 → AI 報價精靈（含收稿）→ 作品展示 → 同業代工 → 頁尾
 export default function HomePage() {
   return (
-    <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 20px 60px" }}>
-      <div style={{ width: "100%", maxWidth: 560, textAlign: "center", marginBottom: 26 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--brand)", letterSpacing: 2, marginBottom: 6 }}>美強光廣告科技</div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 10px", letterSpacing: 0.5 }}>AI 線上收稿</h1>
-        <p style={{ fontSize: 15, color: "var(--muted)", lineHeight: 1.7, margin: 0 }}>
-          留下聯絡方式後即可上傳印刷檔。系統會自動檢查檔名格式，
-          <br />
-          若格式不對會引導您修正，格式正確才收件。
-        </p>
-      </div>
-      <div style={{ width: "100%", maxWidth: 560 }}>
-        <IntakeFlow />
-      </div>
-    </main>
+    <div className="site">
+      <SiteHeader />
+      <main>
+        <Hero />
+        <Services />
+        <QuoteWizard />
+        <Works />
+        <Oem />
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

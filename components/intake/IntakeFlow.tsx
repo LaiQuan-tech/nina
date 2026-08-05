@@ -53,7 +53,7 @@ export default function IntakeFlow() {
   }
 
   if (step.name === "loading") {
-    return <div style={{ height: 260, borderRadius: 18, background: "var(--panel)", boxShadow: "0 12px 40px rgba(20,40,80,.10)" }} />;
+    return <div style={{ height: 200 }} />;
   }
 
   if (step.name === "welcome") {
@@ -73,13 +73,13 @@ export default function IntakeFlow() {
   // upload
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10, fontSize: 13, color: "var(--muted)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12, fontSize: 12.5, color: "var(--s-dim)" }}>
         <span>
-          目前以 <strong style={{ color: "var(--ink)" }}>{step.contact.name}</strong> 收稿
+          目前以 <strong style={{ color: "var(--s-ink)" }}>{step.contact.name}</strong> 收稿
         </span>
         <button
           onClick={() => switchContact(step.contact)}
-          style={{ border: "none", background: "transparent", color: "var(--brand)", fontSize: 13, cursor: "pointer" }}
+          style={{ border: "none", background: "transparent", color: "var(--s-red-deep)", fontSize: 12.5, cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}
         >
           換一個聯絡人
         </button>

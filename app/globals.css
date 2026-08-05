@@ -334,3 +334,190 @@ a.adm-row:hover {
     max-width: 100%;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   官網（美強光廣告科技 A 版）
+   規格來源：design_handoff_mei5899_site/README.md（hifi）
+   零圓角 · 2px 實線框 · 無陰影 · 流動式 RWD（無斷點）
+   變數以 --s-* 命名並限縮在 .site 之下，避免影響後台樣式。
+   ══════════════════════════════════════════════════════════ */
+.site {
+  --s-bg: #f3f2f2;
+  --s-surface: #eae9e9;
+  --s-ink: #201e1d;
+  --s-red: #ec3013;
+  --s-red-hover: #dd2b0f;
+  --s-red-deep: #ae1800;
+  --s-red-tint: #ffe0d9;
+  --s-muted: #444141;
+  --s-dim: #605d5d;
+  --s-faint: #7d7979;
+  --s-on-dark-1: #d7d3d3;
+  --s-on-dark-2: #bab6b6;
+  --s-on-dark-3: #9b9797;
+  --s-pad: clamp(16px, 4vw, 40px);
+  --s-sans: "Archivo", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
+  --s-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  font-family: var(--s-sans);
+  background: var(--s-bg);
+  color: var(--s-ink);
+  width: 100%;
+  overflow-x: hidden;
+}
+.site *,
+.site *::before,
+.site *::after { border-radius: 0 !important; box-shadow: none !important; box-sizing: border-box; }
+.site ::selection { background: #ffc4b8; }
+.site *:focus-visible { outline: 2px solid var(--s-red); outline-offset: 2px; }
+.site a { color: inherit; text-decoration: none; }
+.site img { display: block; max-width: 100%; }
+.site input { font: inherit; }
+.site input::-webkit-outer-spin-button,
+.site input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.site input[type="number"] { -moz-appearance: textfield; }
+.site [id] { scroll-margin-top: 96px; }
+
+/* ── 共用元素 ── */
+.s-pad { padding-left: var(--s-pad); padding-right: var(--s-pad); }
+.s-mono { font-family: var(--s-mono); }
+.s-kicker { font-family: var(--s-mono); font-size: 12px; letter-spacing: .16em; color: var(--s-red-deep); }
+.s-h2 { font-size: clamp(26px, 4vw, 44px); font-weight: 800; letter-spacing: -.02em; margin: 10px 0 0; line-height: 1.1; }
+.s-slot { background: repeating-linear-gradient(135deg, #d7d3d3 0 8px, #eae9e9 8px 16px); position: relative; }
+.s-slot-label {
+  position: absolute; left: 0; bottom: 0; background: #fff; color: var(--s-ink);
+  font-family: var(--s-mono); font-size: 10px; letter-spacing: .12em; padding: 5px 8px;
+}
+.s-cmyk { display: flex; }
+.s-cmyk i { width: clamp(28px, 6vw, 46px); height: 7px; display: block; }
+
+/* 按鈕：最小 44px 高、零圓角、無位移動畫 */
+.s-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 12px 18px; font-size: 15px; font-weight: 600;
+  border: 2px solid var(--s-ink); background: transparent; color: var(--s-ink);
+  cursor: pointer; font-family: inherit; transition: background-color .15s ease-out, color .15s ease-out;
+}
+.s-btn:hover { background: var(--s-red-tint); }
+.s-btn-primary { background: var(--s-red); border-color: var(--s-red); color: #fff; }
+.s-btn-primary:hover { background: var(--s-red-hover); border-color: var(--s-red-hover); }
+.s-btn-ink { background: var(--s-ink); border-color: var(--s-ink); color: var(--s-bg); }
+.s-btn-ink:hover { background: var(--s-muted); border-color: var(--s-muted); }
+
+/* 格線容器：外層鋪 ink，格子鋪底色，用 gap 造線（避免換行雙線） */
+.s-gridlines { background: var(--s-ink); padding: 2px; gap: 2px; display: grid; }
+.s-gridlines > * { background: var(--s-bg); min-width: 0; }
+
+/* ── Header ── */
+.s-header {
+  position: sticky; top: 0; z-index: 20; background: var(--s-bg);
+  border-bottom: 2px solid var(--s-ink);
+  padding: 14px var(--s-pad);
+  display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
+}
+.s-brand { display: flex; align-items: center; gap: 10px; }
+.s-brand img { width: 42px; height: 42px; object-fit: cover; object-position: 50% 56%; }
+.s-brand .n { font-weight: 800; font-size: clamp(16px, 2.2vw, 19px); letter-spacing: -.01em; }
+.s-brand .s { font-family: var(--s-mono); font-size: 9px; letter-spacing: .16em; color: var(--s-faint); }
+.s-nav { display: flex; flex-wrap: wrap; gap: clamp(14px, 2vw, 28px); order: 2; }
+.s-nav a { font-size: 15px; font-weight: 500; min-height: 44px; display: inline-flex; align-items: center; }
+.s-nav a[data-current="true"] { border-bottom: 2px solid var(--s-red); }
+.s-header .s-cta { order: 3; margin-left: auto; }
+
+/* ── Hero ── */
+.s-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); border-bottom: 2px solid var(--s-ink); }
+.s-hero-l { border-right: 2px solid var(--s-ink); padding: clamp(32px, 5vw, 56px) var(--s-pad); }
+.s-h1 { font-size: clamp(36px, 6.4vw, 76px); font-weight: 800; line-height: 1.04; letter-spacing: -.02em; margin: 0; }
+.s-h1 .r { color: var(--s-red); }
+.s-lead { font-size: clamp(15px, 1.5vw, 18px); line-height: 1.7; color: var(--s-muted); max-width: 560px; text-wrap: pretty; margin: 18px 0 24px; }
+.s-hero-btns { display: flex; flex-wrap: wrap; gap: 12px; }
+.s-hero-btns .a { flex: 1 1 220px; padding: 16px 22px; }
+.s-hero-btns .b { flex: 1 1 160px; padding: 16px 22px; }
+.s-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); border-top: 2px solid var(--s-ink); }
+.s-stats > div { padding: 18px; border-right: 2px solid var(--s-ink); min-width: 0; }
+.s-stats > div:last-child { border-right: 0; }
+.s-stats .v { font-size: clamp(26px, 3vw, 34px); font-weight: 800; letter-spacing: -.02em; }
+.s-stats .k { font-family: var(--s-mono); font-size: 11px; letter-spacing: .12em; color: var(--s-dim); margin-top: 2px; }
+
+/* ── 區塊標頭 ── */
+.s-sec { padding-top: clamp(36px, 5vw, 52px); padding-bottom: clamp(36px, 5vw, 52px); }
+.s-sec-head { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between; margin-bottom: 26px; }
+.s-sec-note { font-size: 14px; color: var(--s-dim); max-width: 420px; line-height: 1.6; }
+
+/* ── 服務項目 ── */
+.s-services { grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }
+.s-card { display: flex; flex-direction: column; cursor: pointer; transition: background-color .15s ease-out; }
+.s-card:hover { background: var(--s-surface); }
+.s-card .s-slot { height: 132px; display: flex; align-items: center; justify-content: center; }
+.s-card .s-slot span { font-family: var(--s-mono); font-size: 11px; letter-spacing: .12em; color: var(--s-dim); }
+.s-card .body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
+.s-card .en { display: flex; align-items: center; gap: 8px; font-family: var(--s-mono); font-size: 10px; letter-spacing: .12em; color: var(--s-faint); }
+.s-card .en i { width: 10px; height: 10px; display: block; }
+.s-card .nm { font-size: clamp(17px, 2vw, 19px); font-weight: 800; letter-spacing: -.01em; margin-top: 8px; }
+.s-card .note { font-size: 13px; color: var(--s-dim); line-height: 1.6; margin-top: 6px; }
+.s-card .price { margin-top: auto; padding-top: 12px; font-size: 13px; font-weight: 600; color: var(--s-red-deep); }
+
+/* ── 作品 ── */
+.s-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.s-chip { border: 2px solid var(--s-ink); background: transparent; color: var(--s-ink); font-size: 13px; font-weight: 500; padding: 8px 14px; min-height: 44px; cursor: pointer; font-family: inherit; transition: background-color .15s ease-out, color .15s ease-out; }
+.s-chip[data-on="true"] { background: var(--s-ink); color: var(--s-bg); }
+.s-chip[data-on="true"][data-fin="true"] { background: var(--s-red); border-color: var(--s-red); color: #fff; }
+.s-works { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.s-work .s-slot { height: 180px; }
+.s-work .body { padding: 18px; }
+.s-work .cat { display: flex; align-items: center; gap: 8px; font-family: var(--s-mono); font-size: 10px; letter-spacing: .12em; color: var(--s-red-deep); }
+.s-work .cat i { width: 8px; height: 8px; display: block; }
+.s-work .t { font-size: 16px; font-weight: 700; margin-top: 8px; }
+.s-work .m { font-size: 13px; color: var(--s-dim); margin-top: 4px; line-height: 1.55; }
+
+/* ── AI 報價精靈 ── */
+.s-quote { background: var(--s-surface); border-top: 2px solid var(--s-ink); border-bottom: 2px solid var(--s-ink); }
+.s-quote-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.s-quote-l { border-right: 2px solid var(--s-ink); padding: clamp(36px, 5vw, 52px) var(--s-pad); min-width: 0; }
+.s-quote-r { padding: clamp(36px, 5vw, 52px) var(--s-pad); min-width: 0; }
+.s-steps { margin-top: 22px; }
+.s-step { display: flex; gap: 14px; border-top: 2px solid var(--s-ink); padding: 16px 0; }
+.s-step .n { font-family: var(--s-mono); font-size: 12px; color: var(--s-red); width: 26px; flex: none; font-weight: 500; }
+.s-step .t { font-size: 15px; font-weight: 800; }
+.s-step .d { font-size: 13px; color: var(--s-dim); line-height: 1.6; margin-top: 4px; }
+.s-panel { border: 2px solid var(--s-ink); background: var(--s-bg); }
+.s-panel > .row { border-bottom: 2px solid var(--s-ink); padding: 18px; }
+.s-panel > .row:last-child { border-bottom: 0; }
+.s-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.s-panel-head .l { font-family: var(--s-mono); font-size: 11px; letter-spacing: .12em; }
+.s-panel-head .r { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--s-red-deep); }
+.s-panel-head .r i { width: 8px; height: 8px; background: var(--s-red); display: block; }
+.s-bub { max-width: 86%; padding: 10px 13px; font-size: 13.5px; line-height: 1.6; margin-bottom: 9px; background: var(--s-surface); }
+.s-bub:last-child { margin-bottom: 0; }
+.s-bub.me { margin-left: auto; background: var(--s-ink); color: var(--s-bg); }
+.s-field-label { font-family: var(--s-mono); font-size: 10px; letter-spacing: .12em; color: var(--s-dim); margin-bottom: 8px; }
+.s-sizes { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
+.s-sizes label { display: block; min-width: 0; }
+.s-sizes .lb { font-family: var(--s-mono); font-size: 10px; letter-spacing: .12em; color: var(--s-dim); margin-bottom: 6px; }
+.s-sizes input { width: 100%; border: 2px solid var(--s-ink); background: var(--s-bg); color: var(--s-ink); font-weight: 600; padding: 10px 12px; min-height: 44px; }
+.s-est { background: var(--s-red); color: #fff; padding: 18px; }
+.s-est .lb { font-family: var(--s-mono); font-size: 11px; letter-spacing: .12em; opacity: .9; }
+.s-est .v { font-size: clamp(28px, 4.4vw, 40px); font-weight: 800; letter-spacing: -.02em; margin-top: 4px; }
+.s-est .d { font-size: 12.5px; margin-top: 6px; line-height: 1.55; opacity: .92; }
+.s-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.s-actions .a { flex: 1 1 200px; }
+
+/* ── 同業代工 ── */
+.s-oem { background: var(--s-red); color: #fff; border-top: 2px solid var(--s-ink); }
+.s-oem .s-h2 { color: #fff; font-size: clamp(30px, 5.4vw, 64px); line-height: 1.06; letter-spacing: -.025em; }
+.s-oem-kicker { font-family: var(--s-mono); font-size: 12px; letter-spacing: .16em; color: #fff; opacity: .9; }
+.s-oem-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); background: #f3f2f2; padding: 2px; gap: 2px; margin-top: 32px; }
+.s-oem-cols > div { background: var(--s-red); padding: 20px; min-width: 0; }
+.s-oem-cols .t { font-size: 17px; font-weight: 800; }
+.s-oem-cols .d { font-size: 13.5px; line-height: 1.65; margin-top: 8px; opacity: .95; }
+
+/* ── 頁尾 ── */
+.s-footer { background: var(--s-ink); color: var(--s-bg); }
+.s-footer-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 32px; padding-top: clamp(40px, 6vw, 64px); padding-bottom: clamp(40px, 6vw, 64px); }
+.s-footer .ttl { font-family: var(--s-mono); font-size: 10px; letter-spacing: .16em; color: var(--s-on-dark-3); margin-bottom: 12px; }
+.s-footer .line { font-size: 14px; color: var(--s-on-dark-1); line-height: 1.9; }
+.s-footer .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.s-footer .fbtn { border: 2px solid var(--s-on-dark-2); color: var(--s-bg); background: transparent; min-height: 44px; padding: 10px 16px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; transition: background-color .15s ease-out, border-color .15s ease-out; }
+.s-footer .fbtn:hover { background: var(--s-red); border-color: var(--s-red); }
+.s-footer .rule { font-family: var(--s-mono); font-size: 13px; color: var(--s-on-dark-1); line-height: 1.9; }
+.s-footer .bottom { border-top: 2px solid #3a3735; padding: 18px 0; font-size: 12px; color: var(--s-on-dark-3); }

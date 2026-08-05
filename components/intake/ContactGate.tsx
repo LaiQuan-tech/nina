@@ -8,6 +8,7 @@ export type Contact = { name: string; email: string; phone: string };
 // 收稿前的聯絡資訊表單：姓名/Email/手機（三欄必填）。
 // 送出 → 產 sessionId + POST /api/session 建案件 → onReady(sessionId, contact)。
 // 勾「記住」→ 存 localStorage，下次直接跳「歡迎回來」免再填。
+// 樣式沿用官網設計語言（零圓角、2px 框線）。
 export default function ContactGate({
   onReady,
   initial,
@@ -63,41 +64,48 @@ export default function ContactGate({
   }
 
   return (
-    <form onSubmit={submit} style={{ background: "var(--panel)", borderRadius: 18, padding: 26, boxShadow: "0 12px 40px rgba(20,40,80,.10)" }}>
-      <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>先留個聯絡方式</div>
-      <p style={{ fontSize: 13.5, color: "var(--muted)", margin: "0 0 18px", lineHeight: 1.6 }}>
-        方便我們後續與您聯繫、追蹤稿件進度。填好後即可開始上傳印刷檔。
-      </p>
+    <form onSubmit={submit}>
+      <div className="s-field-label">先留個聯絡方式，方便後續聯繫與追蹤稿件</div>
       {(
         [
           { k: "name", label: "姓名", type: "text", ph: "您的姓名" },
-          { k: "email", label: "Email", type: "email", ph: "you@example.com" },
+          { k: "email", label: "EMAIL", type: "email", ph: "you@example.com" },
           { k: "phone", label: "手機", type: "tel", ph: "0912345678" },
         ] as const
       ).map((f) => (
         <label key={f.k} style={{ display: "block", marginBottom: 12 }}>
-          <span style={{ display: "block", fontSize: 13, color: "var(--muted)", marginBottom: 5 }}>{f.label}</span>
+          <div className="lb s-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "var(--s-dim)", marginBottom: 6 }}>
+            {f.label}
+          </div>
           <input
             type={f.type}
             value={form[f.k]}
             onChange={(e) => set(f.k, e.target.value)}
             placeholder={f.ph}
-            style={{ width: "100%", border: "1px solid var(--line)", borderRadius: 10, padding: "11px 14px", fontSize: 15, outline: "none", boxSizing: "border-box" }}
+            style={{
+              width: "100%",
+              border: "2px solid var(--s-ink)",
+              background: "var(--s-bg)",
+              color: "var(--s-ink)",
+              padding: "11px 13px",
+              minHeight: 44,
+              fontSize: 15,
+              outline: "none",
+            }}
           />
         </label>
       ))}
-      <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 0 14px", cursor: "pointer", userSelect: "none" }}>
+
+      <label style={{ display: "flex", alignItems: "center", gap: 9, margin: "4px 0 14px", cursor: "pointer", userSelect: "none" }}>
         <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} style={{ width: 16, height: 16, cursor: "pointer" }} />
-        <span style={{ fontSize: 13.5, color: "var(--ink)" }}>記住我的聯絡資訊（下次免再填）</span>
+        <span style={{ fontSize: 13.5 }}>記住我的聯絡資訊（下次免再填）</span>
       </label>
+
       {error && (
-        <div style={{ fontSize: 13.5, color: "var(--err)", background: "#fdecea", padding: "9px 13px", borderRadius: 9, marginBottom: 12 }}>{error}</div>
+        <div style={{ fontSize: 13.5, color: "#fff", background: "var(--s-red)", padding: "9px 13px", marginBottom: 12 }}>{error}</div>
       )}
-      <button
-        type="submit"
-        disabled={loading}
-        style={{ width: "100%", border: "none", borderRadius: 12, padding: "13px 16px", background: loading ? "#9db4e8" : "var(--brand)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: loading ? "default" : "pointer" }}
-      >
+
+      <button type="submit" disabled={loading} className="s-btn s-btn-primary" style={{ width: "100%" }}>
         {loading ? "處理中…" : "開始上傳印刷檔"}
       </button>
     </form>
