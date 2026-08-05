@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import AdminHeader from "@/components/admin/AdminHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import TranscriptView from "@/components/admin/TranscriptView";
 import { getIntakeSession } from "@/lib/intakeSessions";
 import { getWorkOrdersBySession } from "@/lib/workOrders";
@@ -35,8 +35,7 @@ export default async function CaseDetailPage({ params }: { params: { id: string 
   const orders = await getWorkOrdersBySession(c.session_id);
 
   return (
-    <>
-      <AdminHeader />
+    <AdminShell>
       <main style={{ maxWidth: 900, margin: "0 auto", padding: "24px 20px 60px" }}>
         <a href="/admin/cases" style={{ fontSize: 14, fontWeight: 600 }}>
           ← 回案件列表
@@ -92,6 +91,6 @@ export default async function CaseDetailPage({ params }: { params: { id: string 
           <TranscriptView messages={c.messages} />
         </section>
       </main>
-    </>
+    </AdminShell>
   );
 }

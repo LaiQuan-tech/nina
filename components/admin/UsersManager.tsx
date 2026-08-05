@@ -3,9 +3,15 @@
 import { useState } from "react";
 import type { AdminUser } from "@/lib/adminUsers";
 
+// 手動格式化（Asia/Taipei 固定 UTC+8、台灣無日光節約）。
+// 不用 Intl：server 與 client 的 ICU 對 zh-TW + hour12:false 會產生不同結果（00:49 vs 24:49），造成 hydration 不一致。
 function fmt(iso: string | null): string {
   if (!iso) return "—";
-  return new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  const t = new Date(d.getTime() + 8 * 60 * 60 * 1000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(t.getUTCMonth() + 1)}/${p(t.getUTCDate())} ${p(t.getUTCHours())}:${p(t.getUTCMinutes())}`;
 }
 
 export default function UsersManager({ initial }: { initial: AdminUser[] }) {
@@ -66,8 +72,8 @@ export default function UsersManager({ initial }: { initial: AdminUser[] }) {
         </button>
       </form>
 
-      <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 4px 18px rgba(20,40,80,.05)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.6fr 1fr 0.8fr 0.8fr", fontSize: 12.5, color: "#6b7280", fontWeight: 600, padding: "12px 18px", borderBottom: "1px solid #eef0f3" }}>
+      <div className="adm-table">
+        <div className="adm-thead" style={{ gridTemplateColumns: UCOLS }}>
           <div>姓名</div>
           <div>Email</div>
           <div>最後登入</div>
@@ -75,17 +81,24 @@ export default function UsersManager({ initial }: { initial: AdminUser[] }) {
           <div>操作</div>
         </div>
         {users.map((u) => (
-          <div key={u.id} style={{ display: "grid", gridTemplateColumns: "1.2fr 1.6fr 1fr 0.8fr 0.8fr", fontSize: 13.5, padding: "13px 18px", borderBottom: "1px solid #f2f4f7", alignItems: "center" }}>
+          <div key={u.id} className="adm-row" style={{ gridTemplateColumns: UCOLS }}>
             <div style={{ fontWeight: 600 }}>{u.name || "—"}</div>
-            <div style={{ color: "#4b5563", wordBreak: "break-all" }}>{u.email}</div>
-            <div style={{ color: "#6b7280", fontSize: 12.5 }}>{fmt(u.last_login_at)}</div>
+            <div style={{ color: "#4b5563", wordBreak: "break-all" }}>
+              <span className="adm-cell-label">Email</span>
+              {u.email}
+            </div>
+            <div style={{ color: "#6b7280", fontSize: 12.5 }}>
+              <span className="adm-cell-label">最後登入</span>
+              {fmt(u.last_login_at)}
+            </div>
             <div>
-              <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 980, background: u.active ? "#dcfce7" : "#f3f4f6", color: u.active ? "#15803d" : "#6b7280" }}>
+              <span className="adm-cell-label">狀態</span>
+              <span style={{ display: "inline-block", fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 980, background: u.active ? "#dcfce7" : "#f3f4f6", color: u.active ? "#15803d" : "#6b7280" }}>
                 {u.active ? "啟用" : "停用"}
               </span>
             </div>
             <div>
-              <button onClick={() => toggle(u)} style={{ fontSize: 12.5, background: "transparent", border: "1px solid #d1d5db", borderRadius: 8, padding: "5px 10px", cursor: "pointer", color: "#374151" }}>
+              <button onClick={() => toggle(u)} style={{ fontSize: 12.5, background: "transparent", border: "1px solid #d1d5db", borderRadius: 8, padding: "6px 12px", cursor: "pointer", color: "#374151" }}>
                 {u.active ? "停用" : "啟用"}
               </button>
             </div>
@@ -95,5 +108,7 @@ export default function UsersManager({ initial }: { initial: AdminUser[] }) {
     </div>
   );
 }
+
+const UCOLS = "1.2fr 1.6fr 1fr 0.8fr 0.8fr";
 
 const inp: React.CSSProperties = { border: "1px solid #d1d5db", borderRadius: 9, padding: "10px 12px", fontSize: 14, outline: "none" };

@@ -1,4 +1,4 @@
-import AdminHeader from "@/components/admin/AdminHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import { getIntakeStats } from "@/lib/intakeSessions";
 
 export const dynamic = "force-dynamic";
@@ -17,8 +17,7 @@ function StatCard({ label, value, hint }: { label: string; value: number; hint?:
 export default async function AdminOverview() {
   const stats = await getIntakeStats();
   return (
-    <>
-      <AdminHeader />
+    <AdminShell>
       <main style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 18px" }}>總覽</h1>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
@@ -33,6 +32,6 @@ export default async function AdminOverview() {
           </a>
         </div>
       </main>
-    </>
+    </AdminShell>
   );
 }

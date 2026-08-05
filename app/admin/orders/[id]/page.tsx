@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import AdminShell from "@/components/admin/AdminShell";
 import { getWorkOrder } from "@/lib/workOrders";
 import WorkOrderSheet from "@/components/order/WorkOrderSheet";
 import OrderEditForm from "@/components/order/OrderEditForm";
@@ -13,16 +14,18 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
   const backHref = order.session_id ? `/admin/cases` : "/admin";
 
   return (
-    <main style={{ padding: "28px 16px 60px" }}>
-      <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        <a href={backHref} style={{ fontSize: 14, fontWeight: 600 }}>
-          ← 回後台
-        </a>
-        <PrintButton />
-      </div>
+    <AdminShell>
+      <main style={{ padding: "28px 16px 60px" }}>
+        <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <a href={backHref} style={{ fontSize: 14, fontWeight: 600 }}>
+            ← 回後台
+          </a>
+          <PrintButton />
+        </div>
 
-      <WorkOrderSheet order={order} />
-      <OrderEditForm order={order} className="no-print" />
-    </main>
+        <WorkOrderSheet order={order} />
+        <OrderEditForm order={order} className="no-print" />
+      </main>
+    </AdminShell>
   );
 }
