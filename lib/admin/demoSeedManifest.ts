@@ -33,8 +33,10 @@ export type DemoSeed = {
 };
 
 export function buildDemoSeed(now = new Date()): DemoSeed {
+  const createdOffsets = [-120, -100, -82, -70, -54, -40, -28, -15, -4, -1];
   const members = CUSTOMERS.map((customer, index) => {
     const n = index + 1;
+    const isMonthlyCustomer = (customer.tags as readonly string[]).includes("月結熟客");
     return {
       id: uuid(1, n),
       phone: `09000000${String(n).padStart(2, "0")}`,
@@ -43,13 +45,13 @@ export function buildDemoSeed(now = new Date()): DemoSeed {
       company: customer.company,
       email: `demo${String(n).padStart(2, "0")}@example.com`,
       status: "active",
-      credit_status: customer.tags.includes("月結熟客" as never) ? "approved" : "prepay",
-      payment_terms: customer.tags.includes("月結熟客" as never) ? "monthly" : "cash",
+      credit_status: isMonthlyCustomer ? "approved" : "prepay",
+      payment_terms: isMonthlyCustomer ? "monthly" : "cash",
       erp_customer_name: customer.company,
       erp_customer_no: `DEMO${String(n).padStart(4, "0")}`,
       paid_order_count: Math.max(0, 14 - n),
       last_order_at: iso(now, -(n + 1)),
-      created_at: iso(now, -(120 - n * 7)),
+      created_at: iso(now, createdOffsets[index]),
       updated_at: iso(now, -Math.min(n, 7)),
       is_demo: true as const,
     };
@@ -126,13 +128,14 @@ export function buildDemoSeed(now = new Date()): DemoSeed {
     const customerIndex = index % CUSTOMERS.length;
     const customer = CUSTOMERS[customerIndex];
     const n = index + 1;
+    const isMonthlyCustomer = (customer.tags as readonly string[]).includes("月結熟客");
     return {
       id: uuid(4, n),
       order_no: `DEMO-WO-${String(n).padStart(4, "0")}`,
       member_id: uuid(1, customerIndex + 1),
       session_id: `demo-session-${String(customerIndex * 2 + (index % 2) + 1).padStart(2, "0")}`,
       serial: `D${String(n).padStart(5, "0")}`,
-      payment_type: customer.tags.includes("月結熟客" as never) ? "月匯" : "現金",
+      payment_type: isMonthlyCustomer ? "月匯" : "現金",
       customer_name: customer.company,
       design_name: `${customer.product}${index % 3 === 0 ? "追加" : ""}`,
       size_w: index % 2 ? 90 : 120,

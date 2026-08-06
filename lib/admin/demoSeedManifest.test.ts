@@ -21,6 +21,11 @@ test("Demo manifest 資料量足以展示各種服務情境", () => {
   assert.equal(seed.followups.length >= 12, true);
 });
 
+test("Demo 客戶包含本月新客，總覽不會顯示零筆", () => {
+  const monthStart = new Date("2026-08-01T00:00:00Z").getTime();
+  assert.equal(seed.members.filter((row) => new Date(row.created_at).getTime() >= monthStart).length >= 2, true);
+});
+
 test("所有關聯都指向存在的 Demo member", () => {
   const memberIds = new Set(seed.members.map((row) => row.id));
   for (const collection of [seed.profiles, seed.sessions, seed.quotes, seed.orders, seed.followups]) {

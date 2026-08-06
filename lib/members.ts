@@ -19,7 +19,13 @@ export type Member = {
   paid_order_count: number;
   last_login_at: string | null;
   created_at: string;
+  is_demo: boolean;
 };
+
+/** Demo 客戶只存在於管理後台，永遠不得進入前台會員流程。 */
+export function isFrontMemberEligible(member: Pick<Member, "is_demo">): boolean {
+  return member.is_demo === false;
+}
 
 /** 給前端看的會員資料（絕不含密碼雜湊、授信備註等內部欄位）。 */
 export type PublicMember = {
@@ -60,19 +66,24 @@ export function toPublicMember(m: Member): PublicMember {
 }
 
 const COLS =
-  "id, phone, phone_display, name, company, email, status, credit_status, payment_terms, paid_order_count, last_login_at, created_at";
+  "id, phone, phone_display, name, company, email, status, credit_status, payment_terms, paid_order_count, last_login_at, created_at, is_demo";
 
 export async function getMemberByPhone(phone: string): Promise<Member | null> {
   const db = createAdminSupabase();
   if (!db) return null;
-  const { data } = await db.from("members").select(COLS).eq("phone", normalizePhone(phone)).maybeSingle();
+  const { data } = await db
+    .from("members")
+    .select(COLS)
+    .eq("phone", normalizePhone(phone))
+    .eq("is_demo", false)
+    .maybeSingle();
   return (data as Member) ?? null;
 }
 
 export async function getMemberById(id: string): Promise<Member | null> {
   const db = createAdminSupabase();
   if (!db) return null;
-  const { data } = await db.from("members").select(COLS).eq("id", id).maybeSingle();
+  const { data } = await db.from("members").select(COLS).eq("id", id).eq("is_demo", false).maybeSingle();
   return (data as Member) ?? null;
 }
 
@@ -89,12 +100,14 @@ export async function memberHasActivity(memberId: string): Promise<boolean> {
   const { count } = await db
     .from("work_orders")
     .select("id", { count: "exact", head: true })
-    .eq("member_id", memberId);
+    .eq("member_id", memberId)
+    .eq("is_demo", false);
   if ((count ?? 0) > 0) return true;
   const { count: sessions } = await db
     .from("intake_sessions")
     .select("id", { count: "exact", head: true })
     .eq("member_id", memberId)
+    .eq("is_demo", false)
     .gt("submitted_count", 0);
   return (sessions ?? 0) > 0;
 }
@@ -116,6 +129,7 @@ export async function createGuestMember(input: {
       email: input.email?.trim() || null,
       company: input.company?.trim() || null,
       status: "guest",
+      is_demo: false,
     })
     .select(COLS)
     .single();
@@ -138,7 +152,7 @@ export async function updateMemberContact(
   if (input.email !== undefined) patch.email = input.email?.trim() || null;
   if (input.company !== undefined) patch.company = input.company?.trim() || null;
   if (Object.keys(patch).length === 0) return;
-  await db.from("members").update(patch).eq("id", memberId);
+  await db.from("members").update(patch).eq("id", memberId).eq("is_demo", false);
 }
 
 export async function createActiveMember(input: {
@@ -172,6 +186,7 @@ export async function createActiveMember(input: {
         status: "active",
       })
       .eq("id", existing.id)
+      .eq("is_demo", false)
       .select(COLS)
       .single();
     if (error) return { ok: false, error: "update_failed" };
@@ -189,6 +204,7 @@ export async function createActiveMember(input: {
       password_hash: hash,
       password_salt: salt,
       status: "active",
+      is_demo: false,
     })
     .select(COLS)
     .single();
@@ -207,7 +223,8 @@ export async function setMemberPassword(memberId: string, password: string): Pro
   const { error } = await db
     .from("members")
     .update({ password_hash: hash, password_salt: salt, status: "active" })
-    .eq("id", memberId);
+    .eq("id", memberId)
+    .eq("is_demo", false);
   return !error;
 }
 
@@ -219,6 +236,7 @@ export async function verifyMemberLogin(phone: string, password: string): Promis
     .from("members")
     .select(`${COLS}, password_hash, password_salt`)
     .eq("phone", normalizePhone(phone))
+    .eq("is_demo", false)
     .maybeSingle();
   if (!data) return null;
   const row = data as Member & { password_hash: string | null; password_salt: string | null };
@@ -231,14 +249,14 @@ export async function verifyMemberLogin(phone: string, password: string): Promis
 export async function touchLastLogin(memberId: string): Promise<void> {
   const db = createAdminSupabase();
   if (!db) return;
-  await db.from("members").update({ last_login_at: new Date().toISOString() }).eq("id", memberId);
+  await db.from("members").update({ last_login_at: new Date().toISOString() }).eq("id", memberId).eq("is_demo", false);
 }
 
 /** 把訪客時期建立的 intake_session 掛到會員名下（「認領」），對話不斷線。 */
 export async function claimSession(sessionId: string, memberId: string): Promise<void> {
   const db = createAdminSupabase();
   if (!db || !sessionId) return;
-  await db.from("intake_sessions").update({ member_id: memberId }).eq("session_id", sessionId);
+  await db.from("intake_sessions").update({ member_id: memberId }).eq("session_id", sessionId).eq("is_demo", false);
 }
 
 /**
@@ -275,6 +293,7 @@ export async function getMemberUploads(memberId: string, limit = 100): Promise<M
     .from("work_orders")
     .select("id, file_name, design_name, size_w, size_h, total_qty, status, created_at")
     .eq("member_id", memberId) // ★ 永遠以 cookie 內的 memberId 過濾，不信任前端
+    .eq("is_demo", false)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error || !data) return [];
