@@ -1,12 +1,25 @@
-# Nina — 印刷檔線上收稿 · 檔名檢查 · 自動建工單
+# Nina — 美強光廣告科技官網 · 印刷檔線上收稿 · 自動建工單
 
-**客戶端**：一進站先填聯絡資訊（姓名/Email/手機）→ 上傳印刷檔 → 系統檢查檔名格式 → 格式錯 AI 引導改名（**不收檔**）→ 格式正確才收檔（存 Supabase Storage）。客戶只看到「送件成功／失敗」，**看不到工單**。可一次上傳多個檔。
+**官網**（`/`）：依 `design_handoff_mei5899_web`（Direction B）建置。Header／Hero／服務項目三軸橫向捲動列／深色作品牆／頁尾 ＋ 右下角 AI 詢價浮動視窗。**價格不公開**，一律走 AI 對話詢價。
+
+**收稿**（`/upload`）：填聯絡資訊（姓名/Email/手機）→ 上傳印刷檔 → 系統檢查檔名格式 → 格式錯 AI 引導改名（**不收檔**）→ 格式正確才收檔（存 Supabase Storage）。客戶只看到「送件成功／失敗」，**看不到工單**。可一次上傳多個檔。
 
 **管理後台**（`/admin`，多帳號密碼登入）：看每個收稿案件的聯絡資訊、完整對話紀錄、收件狀態，以及收件成功後自動建立的工單（可列印）。工單為內部文件，僅後台可見。
 
+## 官網（前台）
+
+- 路由群組 `app/(site)/`：`layout.tsx` 內含 SiteHeader / SiteFooter / ChatWidget；頁面有 `/`、`/about`、`/downloads`、`/upload`。
+- 元件在 `components/mei/`，內容常數在 `lib/site/content.ts`（服務 8 項、作品 4 件、聯絡資訊、導覽）。
+- 樣式：`app/globals.css` 第 337 行之後的 `.mei` 區塊。設計 token 一律 `--mei-*`，**全部限縮在 `.mei` scope 之下**，與後台 `.adm-*`、工單 `.wo-*` 互不影響；**不使用 `!important`**。
+  - 米白 `#f7f5f2`／墨黑 `#181513`／唯一強調色洋紅 `#e6007e`；Noto Serif TC（標題）+ Noto Sans TC + JetBrains Mono。
+  - RWD 手機優先，斷點 `<640` 手機（漢堡右滑抽屜）／`640–1024` 平板（nav 只露 3 項）／`>1024` 桌機（nav 5 項，內容 max-width 1280）。
+  - ⚠️ 區塊樣式**不要用 `padding` 簡寫**，會把 `.mei-pad` 的左右內距洗掉；只寫 `padding-top` / `padding-bottom`。
+- 圖片位走 `components/mei/Slot.tsx`：有圖顯示圖，沒圖 fallback 成條紋佔位＋mono 標籤。目前 13 個圖位（hero 1＋服務 8＋作品 4）皆為佔位，待接 `site_images`。
+- Logo：`public/logo-mei.png`（去背 500×500 PNG）。原始檔在 `design_handoff_mei5899_web/assets/logo-source.jpg`（2048×2048，**不要直接開，先 `sips -Z 1024` 產縮圖**）。
+
 ## 客戶／後台流程
 
-- 客戶端：`app/page.tsx` → `components/intake/IntakeFlow.tsx`（ContactGate 聯絡表單 → ChatUpload 上傳）。案件與對話存 `intake_sessions`。
+- 收稿頁：`app/(site)/upload/page.tsx` → `components/intake/IntakeFlow.tsx`（ContactGate 聯絡表單 → ChatUpload 上傳）。案件與對話存 `intake_sessions`。
 - 收檔：`app/api/upload/route.ts` 伺服器端再驗檔名 → 存 storage → 建工單（關聯 `session_id`）→ 更新案件狀態；回客戶**只有** `{ok, fileName}`。
 - 後台：`/admin`（總覽）、`/admin/cases`（案件列表）、`/admin/cases/[id]`（聯絡卡＋對話＋工單清單）、`/admin/orders/[id]`（可列印工單）、`/admin/users`（管理員帳號）。
 - 認證：`lib/adminAuth.ts`（HMAC 簽章 cookie，Edge-safe）+ `lib/adminPassword.ts`（pbkdf2，Node）+ `middleware.ts` 閘門。多帳號在 `admin_users` 表；`node scripts/createAdmin.mjs <email> <password> [name]` 建帳號。
