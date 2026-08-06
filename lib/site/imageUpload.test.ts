@@ -10,6 +10,8 @@ import {
 import { mapReadyRows } from "./siteImages";
 import { groupAdminImages, replaceAdminImage } from "./siteImagesAdminState";
 import type { SiteImageAdminRecord } from "./siteImages";
+import { GENERATED_SITE_IMAGES } from "./generatedImageManifest";
+import { IMAGE_SLOTS } from "./imageSlots";
 
 const jpeg = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0x00]);
 const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
@@ -166,4 +168,12 @@ test("replaceAdminImage 只替換指定圖片位", () => {
   const after = replaceAdminImage(before, replacement);
   assert.equal(after[0], before[0]);
   assert.equal(after[1], replacement);
+});
+
+test("生成圖片 manifest 完整涵蓋所有圖片位且不重複", () => {
+  const expected = IMAGE_SLOTS.map((slot) => slot.slotKey).sort();
+  const actual = GENERATED_SITE_IMAGES.map((image) => image.slotKey).sort();
+  assert.deepEqual(actual, expected);
+  assert.equal(new Set(actual).size, actual.length);
+  assert.equal(GENERATED_SITE_IMAGES.every((image) => image.fileName.endsWith(".webp")), true);
 });
