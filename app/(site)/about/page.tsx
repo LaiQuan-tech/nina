@@ -17,7 +17,7 @@ export default function AboutPage() {
       </p>
       <p>
         公司沿革、設備與機台清單整理中。需要詳細規格或現場評估，歡迎來電
-        <a href={CONTACT.phoneHref} style={{ color: "var(--mei-m)" }}>
+        <a href={CONTACT.phoneHref} style={{ color: "var(--mei-accent)" }}>
           {CONTACT.phone}
         </a>
         ，或加 LINE 由專員為您說明。

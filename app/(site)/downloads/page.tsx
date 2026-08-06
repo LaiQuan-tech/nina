@@ -22,7 +22,7 @@ export default function DownloadsPage() {
         </p>
         <p style={{ marginTop: 12 }}>
           檔名格式正確才收得進工單。可以直接到
-          <a href="/upload" style={{ color: "var(--mei-m)" }}>
+          <a href="/upload" style={{ color: "var(--mei-accent)" }}>
             上傳稿件
           </a>
           頁面，系統會自動檢查檔名並在格式不對時告訴您怎麼改。

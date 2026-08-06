@@ -33,7 +33,7 @@ export default function ProjectWall({ images }: { images?: Record<string, SlotIm
   return (
     <section id="works" className="mei-works">
       <div className="mei-page mei-pad">
-        <div className="mei-sec-head" style={{ marginBottom: 20 }}>
+        <div className="mei-sec-head" style={{ marginBottom: 20 }} data-reveal>
           <h2 className="mei-h2">近期作品</h2>
           <div className="mei-hscroll mei-axis" role="group" aria-label="作品分類">
             {WORK_CATS.map((c) => (
@@ -61,6 +61,8 @@ export default function ProjectWall({ images }: { images?: Record<string, SlotIm
                 type="button"
                 className="mei-work"
                 data-span={cat === "全部" ? w.span : "1x1"}
+                data-reveal
+                data-d={Math.min(i, 3)}
                 onClick={() => setLb(i)}
                 aria-label={`放大檢視：${w.title}`}
               >

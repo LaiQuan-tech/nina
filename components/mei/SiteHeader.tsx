@@ -8,11 +8,22 @@ import { openChat } from "@/components/mei/OpenChatButton";
 // 捲動 >80px 時加一條底線陰影（設計稿 Interactions）。
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const [stuck, setStuck] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
+  // data-stuck 純粹是視覺旗標，直接寫 DOM 而不進 React state：
+  // 走 state 的話每次跨過 80px 門檻都要重繪整個 header 與抽屜。
   useEffect(() => {
-    const onScroll = () => setStuck(window.scrollY > 80);
+    const el = headerRef.current;
+    if (!el) return;
+    let last = "";
+    const onScroll = () => {
+      const v = window.scrollY > 80 ? "true" : "false";
+      if (v !== last) {
+        last = v;
+        el.dataset.stuck = v;
+      }
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -36,19 +47,12 @@ export default function SiteHeader() {
 
   return (
     <>
-      <header className="mei-header" data-stuck={stuck ? "true" : "false"}>
+      <header ref={headerRef} className="mei-header" data-stuck="false">
         <div className="mei-page mei-pad mei-header-in">
           <a className="mei-brand" href="/" aria-label={`${CONTACT.company} 首頁`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-mei.png" alt="" width={30} height={30} aria-hidden="true" />
-            <span>
-              <span className="nm" style={{ display: "block" }}>
-                美強光
-              </span>
-              <span className="sub" aria-hidden="true">
-                MEI5899 · 廣告科技
-              </span>
-            </span>
+            <span className="nm">美強光廣告科技</span>
           </a>
 
           <nav className="mei-nav" aria-label="主要導覽">

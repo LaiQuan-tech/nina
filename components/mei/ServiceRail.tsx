@@ -23,7 +23,7 @@ export default function ServiceRail({ images }: { images?: Record<string, SlotIm
 
   return (
     <section id="service" className="mei-page mei-sec">
-      <div className="mei-sec-head mei-pad">
+      <div className="mei-sec-head mei-pad" data-reveal>
         <div className="t">
           <div className="mei-kicker">OUR SERVICE</div>
           <h2 className="mei-h2">你要做的是哪一種？</h2>
@@ -55,11 +55,13 @@ export default function ServiceRail({ images }: { images?: Record<string, SlotIm
         </button>
 
         <div className="mei-hscroll mei-rail" ref={railRef}>
-          {cards.map(({ s, g }) => (
+          {cards.map(({ s, g }, i) => (
             <button
               key={s.slug}
               type="button"
               className="mei-card"
+              data-reveal
+              data-d={Math.min(i, 3)}
               onClick={() => openChat(`我想問「${s.name}」的價格`)}
             >
               <span className="mei-thumb">
@@ -73,7 +75,7 @@ export default function ServiceRail({ images }: { images?: Record<string, SlotIm
             </button>
           ))}
 
-          <a href="/#service" className="mei-card-all">
+          <a href="/#service" className="mei-card-all" data-reveal data-d="3">
             <span className="a">看全部服務項目</span>
             <span className="b">15+ 分類 →</span>
           </a>

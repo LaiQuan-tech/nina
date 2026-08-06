@@ -4,7 +4,7 @@ export default function SiteFooter() {
   return (
     <footer id="contact" className="mei-footer">
       <div className="mei-page mei-pad mei-footer-in">
-        <div>
+        <div data-reveal>
           <p className="line" style={{ margin: 0 }}>
             {CONTACT.address}　·
             <a href={CONTACT.phoneHref}>{CONTACT.phone}</a>　·
@@ -26,7 +26,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div>
+        <div data-reveal data-d="1">
           <p className="line" style={{ margin: 0 }}>
             {CONTACT.hours}
           </p>
