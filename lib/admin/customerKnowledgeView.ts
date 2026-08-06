@@ -194,6 +194,14 @@ export function validateCustomerProfilePatch(input: unknown): ProfilePatchValida
 
 export type FollowupValidation = { ok: true; value: Record<string, string | null> } | { ok: false; error: string };
 
+export function followupCompletionPatch(
+  status: string | undefined,
+  completedAt = new Date().toISOString(),
+): Record<string, string | null> {
+  if (!status) return {};
+  return { completed_at: status === "completed" ? completedAt : null };
+}
+
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const FOLLOWUP_FIELDS = new Set(["memberId", "title", "reason", "priority", "status", "assignee", "dueAt"]);
 

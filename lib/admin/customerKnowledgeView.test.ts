@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildDailyActivity,
   bucketFollowups,
+  followupCompletionPatch,
   historicalEventAt,
   latestHistoricalEventAt,
   matchesCustomerFilters,
@@ -191,4 +192,13 @@ test("回訪輸入拒絕未知欄位、非 UUID、錯誤日期與錯誤狀態", 
   assert.equal(validateFollowupInput({ memberId: "10000000-0000-4000-8000-000000000001", title: "追蹤", dueAt: "not-date" }, "create").ok, false);
   assert.equal(validateFollowupInput({ status: "deleted" }, "update").ok, false);
   assert.equal(validateFollowupInput({ isDemo: false }, "update").ok, false);
+});
+
+test("回訪離開完成狀態時會清除 completed_at", () => {
+  assert.deepEqual(followupCompletionPatch("completed", "2026-08-06T05:00:00.000Z"), {
+    completed_at: "2026-08-06T05:00:00.000Z",
+  });
+  assert.deepEqual(followupCompletionPatch("open"), { completed_at: null });
+  assert.deepEqual(followupCompletionPatch("cancelled"), { completed_at: null });
+  assert.deepEqual(followupCompletionPatch(undefined), {});
 });

@@ -103,7 +103,7 @@ export async function POST(req: Request) {
   }
 
   // 建案件（沿用既有的 intake_sessions）
-  await upsertSessionContact({
+  const sessionReady = await upsertSessionContact({
     sessionId,
     name,
     email,
@@ -111,6 +111,12 @@ export async function POST(req: Request) {
     ip: clientIp(req),
     ua: req.headers.get("user-agent") ?? "",
   });
+  if (!sessionReady) {
+    return NextResponse.json(
+      { ok: false, error: "session_unavailable", message: "目前無法建立送件紀錄，請重新整理後再試" },
+      { status: 409 },
+    );
+  }
   await claimSession(sessionId, member.id);
   await touchLastLogin(member.id);
 
