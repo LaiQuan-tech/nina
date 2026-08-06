@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test lib/filename/parser.test.ts lib/site/imageUpload.test.ts lib/admin/customerKnowledgeView.test.ts lib/admin/demoSeedManifest.test.ts lib/memberAccess.test.ts",
+    "test": "node --import tsx --test lib/filename/parser.test.ts lib/site/imageUpload.test.ts lib/admin/customerKnowledgeView.test.ts lib/admin/demoSeedManifest.test.ts lib/memberAccess.test.ts lib/upload/completion.test.ts",
     "test:parser": "node --import tsx --test lib/filename/parser.test.ts",
     "seed:site-images": "tsx scripts/seedSiteImages.ts",
     "seed:demo-crm": "tsx scripts/seedDemoCrm.ts",

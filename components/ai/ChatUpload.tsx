@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ParseResult } from "@/lib/filename/publicTypes";
+import { summarizeUploadBatch, type UploadBatchSummary } from "@/lib/upload/completion";
 
 type Msg = { role: "user" | "model"; text: string; tone?: "ok" | "err" };
 
@@ -10,23 +11,31 @@ const EXAMPLE = "069871_{(月匯)百陽廣告}_(78)20260625WG星雲AI地板90x10
 export default function ChatUpload({
   sessionId,
   contactName,
-  onSubmitted,
+  focusRequest = 0,
+  onBatchStart,
+  onBatchComplete,
 }: {
   sessionId: string;
   contactName?: string;
-  /** 有任何一個檔案收件成功時呼叫一次（用來在上面提示 guest 去設密碼）。 */
-  onSubmitted?: () => void;
+  focusRequest?: number;
+  onBatchStart?: () => void;
+  onBatchComplete?: (summary: UploadBatchSummary) => void;
 }) {
   const greeting = `${contactName ? contactName + "您好 👋 " : "您好 👋 "}請把印刷檔拖進來、或點下方按鈕選檔。我會先幫您檢查檔名格式；格式正確才會收件，格式不對我會告訴您怎麼修改。可以一次上傳多個檔案。`;
   const [msgs, setMsgs] = useState<Msg[]>([{ role: "model", text: greeting }]);
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const uploadButtonRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, busy]);
+
+  useEffect(() => {
+    if (focusRequest > 0) uploadButtonRef.current?.focus();
+  }, [focusRequest]);
 
   // 每次對話變動 → 記錄到後台案件（吞錯，不影響客戶）
   function syncLog(all: Msg[]) {
@@ -49,21 +58,22 @@ export default function ChatUpload({
   async function handleFiles(list: FileList | null) {
     if (busy || !list || list.length === 0) return;
     const files = Array.from(list);
+    onBatchStart?.();
     setBusy(true);
     try {
       if (files.length > 1) {
         add({ role: "model", text: `收到 ${files.length} 個檔案，我依序幫您檢查 👀` });
       }
-      for (const f of files) {
-        await processFile(f);
-      }
+      const results: boolean[] = [];
+      for (const f of files) results.push(await processFile(f));
+      onBatchComplete?.(summarizeUploadBatch(results));
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
     }
   }
 
-  async function processFile(file: File) {
+  async function processFile(file: File): Promise<boolean> {
     add({ role: "user", text: `📄 ${file.name}` });
 
     try {
@@ -82,7 +92,7 @@ export default function ChatUpload({
           body: JSON.stringify({ fileName: file.name, result: v.result }),
         }).then((r) => r.json())) as { ok: boolean; reply?: string };
         add({ role: "model", tone: "err", text: g.reply || "檔名格式不正確，請調整後再上傳一次。" });
-        return;
+        return false;
       }
 
       // 3) 檔名正確 → 真正上傳（帶 sessionId）
@@ -101,12 +111,14 @@ export default function ChatUpload({
           tone: "ok",
           text: `✅ 送件成功！已收到您的檔案（${file.name}），我們會盡快為您處理。若還有其他檔案，可以繼續上傳。`,
         });
-        onSubmitted?.();
+        return true;
       } else {
         add({ role: "model", tone: "err", text: "收件失敗，請稍後再試一次。" });
+        return false;
       }
     } catch {
       add({ role: "model", tone: "err", text: "連線出了點問題，請稍後再試一次。" });
+      return false;
     }
   }
 
@@ -159,6 +171,7 @@ export default function ChatUpload({
         onChange={(e) => void handleFiles(e.target.files)}
       />
       <button
+        ref={uploadButtonRef}
         onClick={() => fileRef.current?.click()}
         disabled={busy}
         className="mei-btn mei-btn-primary"

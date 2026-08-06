@@ -19,7 +19,12 @@ function tpe(iso: string): string {
   return `${d.getUTCFullYear()}/${p(d.getUTCMonth() + 1)}/${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
 }
 
-export default async function MemberPage() {
+export default async function MemberPage({
+  searchParams,
+}: {
+  searchParams?: { submitted?: string };
+}) {
+  const showSubmitted = searchParams?.submitted === "1";
   const me = await getSessionMember();
   // middleware 已經擋過一層，這裡是第二道保險（也讓型別收斂）
   if (!me) redirect("/login?next=/member");
@@ -39,6 +44,13 @@ export default async function MemberPage() {
         </div>
         <LogoutButton />
       </div>
+
+      {showSubmitted && (
+        <div className="mei-notice" role="status">
+          <p className="t">送件完成，我們已收到您的檔案。</p>
+          <p className="d">最新紀錄已列在下方，後續可回到這裡查看製作進度。</p>
+        </div>
+      )}
 
       {me.status === "guest" && <SetPasswordCard />}
 

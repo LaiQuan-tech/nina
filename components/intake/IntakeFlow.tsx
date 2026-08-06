@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import ContactGate, { type Contact } from "@/components/intake/ContactGate";
 import ChatUpload from "@/components/ai/ChatUpload";
-import { SetPasswordCard } from "@/components/member/MemberActions";
+import UploadCompletionCard from "@/components/intake/UploadCompletionCard";
 import { clearLastPhone, loadLastPhone } from "@/components/intake/contactStorage";
+import type { UploadBatchSummary } from "@/lib/upload/completion";
 
 type Member = { id: string; name: string; phone: string; phoneDisplay: string; email: string | null; status: string };
 
@@ -25,7 +26,8 @@ function newSessionId() {
  */
 export default function IntakeFlow() {
   const [step, setStep] = useState<Step>({ name: "loading" });
-  const [uploaded, setUploaded] = useState(false);
+  const [batchSummary, setBatchSummary] = useState<UploadBatchSummary | null>(null);
+  const [focusRequest, setFocusRequest] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -61,10 +63,20 @@ export default function IntakeFlow() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!batchSummary?.canFinish) return;
+    const frame = requestAnimationFrame(() => {
+      const title = document.getElementById("upload-complete-title");
+      title?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      title?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [batchSummary]);
+
   const switchContact = useCallback(async () => {
     clearLastPhone();
     await fetch("/api/member/login", { method: "DELETE" }).catch(() => {});
-    setUploaded(false);
+    setBatchSummary(null);
     setStep({ name: "form", initialPhone: "" });
   }, []);
 
@@ -104,12 +116,22 @@ export default function IntakeFlow() {
         </button>
       </div>
 
-      <ChatUpload sessionId={step.sessionId} contactName={step.who} onSubmitted={() => setUploaded(true)} />
+      <ChatUpload
+        sessionId={step.sessionId}
+        contactName={step.who}
+        focusRequest={focusRequest}
+        onBatchStart={() => setBatchSummary(null)}
+        onBatchComplete={(summary) => setBatchSummary(summary.canFinish ? summary : null)}
+      />
 
-      {uploaded && step.status === "guest" && (
-        <div style={{ marginTop: 16 }}>
-          <SetPasswordCard />
-        </div>
+      {batchSummary?.canFinish && (
+        <UploadCompletionCard
+          summary={batchSummary}
+          onContinue={() => {
+            setBatchSummary(null);
+            setFocusRequest((value) => value + 1);
+          }}
+        />
       )}
     </div>
   );

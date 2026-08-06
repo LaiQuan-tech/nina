@@ -1407,3 +1407,49 @@ a.adm-row:hover {
   .mei-chat { right: 28px; bottom: 28px; width: 340px; }
   .mei-fab { right: 28px; bottom: 28px; }
 }
+/* Upload completion: a clear end state after each successfully received batch. */
+.mei-upload-complete {
+  margin-top: 16px;
+  border: 1px solid var(--mei-line);
+  border-left: 4px solid var(--mei-red);
+  border-radius: var(--mei-r-card);
+  background: #fff;
+  padding: 20px;
+}
+
+.mei-upload-complete h2 {
+  margin: 4px 0 8px;
+  font-size: clamp(22px, 3vw, 30px);
+}
+
+.mei-upload-complete h2:focus-visible {
+  outline: 2px solid var(--mei-ink);
+  outline-offset: 4px;
+}
+
+.mei-upload-complete > p:not(.mei-kicker) {
+  margin: 0;
+  color: var(--mei-text-3);
+  line-height: 1.75;
+}
+
+.mei-upload-complete .actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.mei-upload-complete .actions .mei-btn {
+  min-height: 46px;
+}
+
+@media (max-width: 560px) {
+  .mei-upload-complete .actions {
+    flex-direction: column;
+  }
+
+  .mei-upload-complete .actions .mei-btn {
+    width: 100%;
+  }
+}
