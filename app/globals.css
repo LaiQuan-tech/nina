@@ -280,6 +280,49 @@ a.adm-row:hover {
   margin-bottom: 2px;
 }
 
+/* 後台：官網站圖管理 */
+.adm-site-page { max-width: 1180px; margin: 0 auto; padding: 28px 20px 72px; }
+.adm-site-title { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 28px; }
+.adm-site-title h1 { margin: 0 0 6px; font-size: 22px; }
+.adm-site-title p { margin: 0; color: #6b7280; font-size: 13.5px; }
+.adm-site-title a { flex: 0 0 auto; color: #be123c; font-size: 13px; font-weight: 700; }
+.adm-site-groups { display: grid; gap: 34px; }
+.adm-site-group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.adm-site-group-head h2 { margin: 0; font-size: 17px; }
+.adm-site-group-head span { color: #9ca3af; font-size: 12px; }
+.adm-site-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.adm-site-card { overflow: hidden; border: 1px solid #e5e7eb; border-radius: 16px; background: #fff; box-shadow: 0 5px 20px rgba(15, 23, 42, .05); }
+.adm-site-preview { position: relative; overflow: hidden; min-height: 150px; background: repeating-linear-gradient(135deg, #eceff3 0 8px, #f8fafc 8px 16px); }
+.adm-site-preview img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.adm-site-empty { position: absolute; inset: 0; display: grid; place-items: center; color: #9ca3af; font-size: 13px; }
+.adm-site-pending { position: absolute; top: 10px; right: 10px; padding: 5px 8px; border-radius: 999px; background: rgba(17, 24, 39, .82); color: #fff; font-size: 11px; font-weight: 700; }
+.adm-site-info { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 15px 0; }
+.adm-site-info h3 { margin: 0 0 4px; font-size: 14px; }
+.adm-site-info code { color: #9ca3af; font-size: 10.5px; }
+.adm-site-aspect { padding: 4px 7px; border-radius: 6px; background: #f3f4f6; color: #6b7280; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.adm-site-meta { min-height: 18px; margin: 10px 15px 12px; color: #6b7280; font-size: 11.5px; }
+.adm-site-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 15px 15px; }
+.adm-site-file,
+.adm-site-actions button { display: grid; min-height: 40px; place-items: center; margin: 0; border: 1px solid #d1d5db; border-radius: 9px; background: #fff; color: #374151; font-size: 12px; font-weight: 700; cursor: pointer; }
+.adm-site-file input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.adm-site-actions button { border-color: #111827; background: #111827; color: #fff; }
+.adm-site-actions button:disabled,
+.adm-site-file:has(input:disabled) { cursor: not-allowed; opacity: .45; }
+.adm-site-notice { margin: -3px 15px 15px; font-size: 12px; }
+.adm-site-notice.success { color: #047857; }
+.adm-site-notice.error { color: #b91c1c; }
+
+@media (max-width: 980px) {
+  .adm-site-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .adm-site-page { padding: 20px 14px 56px; }
+  .adm-site-title { align-items: flex-end; }
+  .adm-site-title p { max-width: 260px; }
+  .adm-site-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 760px) {
   .adm-thead {
     display: none;

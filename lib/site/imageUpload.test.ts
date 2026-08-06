@@ -8,6 +8,8 @@ import {
   validateImageBytes,
 } from "./imageUpload";
 import { mapReadyRows } from "./siteImages";
+import { groupAdminImages, replaceAdminImage } from "./siteImagesAdminState";
+import type { SiteImageAdminRecord } from "./siteImages";
 
 const jpeg = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0x00]);
 const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
@@ -124,4 +126,44 @@ test("validateSiteImageInput 回傳可信圖片位與實際格式", () => {
     assert.equal(result.slot.slotKey, "hero.main");
     assert.equal(result.extension, "webp");
   }
+});
+
+function adminRecord(slotKey: string, groupKey: "hero" | "service" | "work"): SiteImageAdminRecord {
+  return {
+    slotKey,
+    groupKey,
+    label: slotKey,
+    alt: slotKey,
+    aspect: "4:3",
+    sort: groupKey === "hero" ? 0 : groupKey === "service" ? 10 : 20,
+    subject: slotKey,
+    storagePath: null,
+    publicUrl: null,
+    source: null,
+    status: "empty",
+    width: null,
+    height: null,
+    updatedAt: null,
+  };
+}
+
+test("groupAdminImages 按主視覺、服務、作品分組", () => {
+  const groups = groupAdminImages([
+    adminRecord("work.1", "work"),
+    adminRecord("hero.main", "hero"),
+    adminRecord("service.canvas", "service"),
+  ]);
+  assert.deepEqual(groups.map((group) => [group.key, group.images.map((image) => image.slotKey)]), [
+    ["hero", ["hero.main"]],
+    ["service", ["service.canvas"]],
+    ["work", ["work.1"]],
+  ]);
+});
+
+test("replaceAdminImage 只替換指定圖片位", () => {
+  const before = [adminRecord("hero.main", "hero"), adminRecord("work.1", "work")];
+  const replacement = { ...before[1], publicUrl: "https://cdn.example/work.webp", status: "ready" };
+  const after = replaceAdminImage(before, replacement);
+  assert.equal(after[0], before[0]);
+  assert.equal(after[1], replacement);
 });
