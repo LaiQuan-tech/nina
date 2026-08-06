@@ -679,6 +679,7 @@ a.adm-row:hover {
 /* ══════════ Hero ══════════ */
 .mei-hero { display: grid; grid-template-columns: 1fr; }
 .mei-hero-img { order: -1; height: 260px; }
+.mei-hero-img picture { display: block; width: 100%; height: 100%; }
 .mei-hero-img img { width: 100%; height: 100%; object-fit: cover; }
 .mei-hero-l {
   display: flex;

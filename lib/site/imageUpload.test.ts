@@ -6,6 +6,7 @@ import {
   findImageSlot,
   validateImageBytes,
 } from "./imageUpload";
+import { mapReadyRows } from "./siteImages";
 
 const jpeg = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0x00]);
 const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
@@ -65,4 +66,45 @@ test("buildStoragePath 產生版本化且不含使用者檔名的安全路徑", 
   const path = buildStoragePath("service.canvas", "webp", 1_786_000_000_000, "abc-123");
   assert.equal(path, "slots/service-canvas/1786000000000-abc123.webp");
   assert.match(path, /^[a-z0-9/-]+\.(jpg|png|webp)$/);
+});
+
+test("mapReadyRows 只映射啟用、ready 且有網址的圖片", () => {
+  const images = mapReadyRows([
+    {
+      slot_key: "hero.main",
+      public_url: "https://cdn.example/hero.webp",
+      alt: "工人安裝大型帆布",
+      width: 1200,
+      height: 1600,
+      is_active: true,
+      status: "ready",
+    },
+    {
+      slot_key: "work.1",
+      public_url: "https://cdn.example/draft.webp",
+      alt: "未完成圖片",
+      width: null,
+      height: null,
+      is_active: true,
+      status: "generating",
+    },
+    {
+      slot_key: "work.2",
+      public_url: "https://cdn.example/inactive.webp",
+      alt: "停用圖片",
+      width: 1600,
+      height: 1000,
+      is_active: false,
+      status: "ready",
+    },
+  ]);
+
+  assert.deepEqual(images, {
+    "hero.main": {
+      url: "https://cdn.example/hero.webp",
+      alt: "工人安裝大型帆布",
+      width: 1200,
+      height: 1600,
+    },
+  });
 });
