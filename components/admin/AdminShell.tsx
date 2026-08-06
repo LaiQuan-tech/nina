@@ -5,9 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 
 const NAV = [
   { href: "/admin", label: "總覽", ic: "▦" },
-  { href: "/admin/cases", label: "收稿案件", ic: "🗂" },
+  { href: "/admin/customers", label: "客戶知識庫", ic: "◉" },
+  { href: "/admin/knowledge", label: "服務知識庫", ic: "⌕" },
+  { href: "/admin/followups", label: "追蹤與回訪", ic: "✓" },
+  { href: "/admin/cases", label: "收稿案件", ic: "▤" },
   { href: "/admin/site-images", label: "網站圖片", ic: "▧" },
-  { href: "/admin/users", label: "管理員帳號", ic: "👥" },
+  { href: "/admin/users", label: "管理員帳號", ic: "♙" },
 ];
 
 // 後台外殼：桌機左側固定功能列；手機收成抽屜（頂端漢堡開關）。
@@ -45,7 +48,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       <aside className={`adm-side no-print${open ? " open" : ""}`}>
         <div className="adm-brand">
           美強光廣告科技
-          <span>AI 收稿系統 · 後台</span>
+          <span>AI 數位系統 · 後台</span>
         </div>
         <nav className="adm-nav">
           {NAV.map((n) => {
