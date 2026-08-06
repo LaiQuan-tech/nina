@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import AdminAiAssistant from "@/components/admin/AdminAiAssistant";
 
 const NAV = [
   { href: "/admin", label: "總覽", ic: "▦" },
@@ -69,6 +70,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       </aside>
 
       <div className="adm-main">{children}</div>
+      <AdminAiAssistant />
     </div>
   );
 }
