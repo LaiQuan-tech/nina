@@ -42,6 +42,7 @@ create table if not exists work_orders (
   receiver text,                                 -- 接稿人
 
   status text not null default 'open',
+  is_demo boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

@@ -47,6 +47,7 @@ create table if not exists members (
   reset_expires_at timestamptz,
 
   last_login_at timestamptz,
+  is_demo boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -71,7 +72,9 @@ create trigger trg_members_updated
 -- ── 既有表關聯到會員 ──
 -- 訪客先聊/先傳，登入後把當下的 session 補上 member_id（「認領」），對話不斷線。
 alter table intake_sessions add column if not exists member_id uuid;
+alter table intake_sessions add column if not exists is_demo boolean not null default false;
 create index if not exists intake_sessions_member_idx on intake_sessions (member_id, updated_at desc);
 
 alter table work_orders add column if not exists member_id uuid;
+alter table work_orders add column if not exists is_demo boolean not null default false;
 create index if not exists work_orders_member_idx on work_orders (member_id, created_at desc);
