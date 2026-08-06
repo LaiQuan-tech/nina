@@ -1,5 +1,6 @@
 import { createAdminSupabase } from "@/lib/supabase";
 import {
+  buildDailyActivity,
   matchesCustomerFilters,
   mergeCustomerTimeline,
   type CustomerFilters,
@@ -256,12 +257,9 @@ export async function getDemoDashboard(now = new Date()): Promise<DemoDashboard>
   const followups = data.followups.map((row) => toFollowup(row, membersById.get(row.member_id)));
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const activityDates = [...data.sessions.map((row) => row.updated_at), ...data.quotes.map((row) => row.updated_at), ...data.orders.map((row) => row.updated_at)];
-  const dailyActivity = Array.from({ length: 14 }, (_, index) => {
-    const date = new Date(todayStart - (13 - index) * 24 * 60 * 60 * 1000);
-    const key = date.toISOString().slice(0, 10);
-    return { label: `${date.getMonth() + 1}/${date.getDate()}`, value: activityDates.filter((iso) => iso.slice(0, 10) === key).length };
-  });
+  // 圖表呈現事件發生日；updated_at 會因 Demo upsert trigger 全部變成灌資料當下，不能代表互動分布。
+  const activityDates = [...data.sessions.map((row) => row.created_at), ...data.quotes.map((row) => row.created_at), ...data.orders.map((row) => row.created_at)];
+  const dailyActivity = buildDailyActivity(activityDates, now);
   return {
     customerCount: customers.length,
     newThisMonth: customers.filter((row) => new Date(row.createdAt).getTime() >= monthStart).length,

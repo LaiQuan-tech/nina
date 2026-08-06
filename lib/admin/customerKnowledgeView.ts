@@ -65,6 +65,35 @@ function taipeiDayStart(value: Date): number {
   return Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()) - 8 * 60 * 60 * 1000;
 }
 
+function taipeiDateParts(value: Date): { year: number; month: number; day: number } {
+  const shifted = new Date(value.getTime() + 8 * 60 * 60 * 1000);
+  return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() + 1, day: shifted.getUTCDate() };
+}
+
+function taipeiDateKey(value: Date): string {
+  const { year, month, day } = taipeiDateParts(value);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/** 以台北日曆日彙整互動，避免 Vercel UTC 與本機時區造成日期錯位。 */
+export function buildDailyActivity(activityDates: string[], now = new Date(), days = 14): Array<{ label: string; value: number }> {
+  const dayMs = 24 * 60 * 60 * 1000;
+  const today = taipeiDayStart(now);
+  const counts = new Map<string, number>();
+  for (const value of activityDates) {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) continue;
+    const key = taipeiDateKey(parsed);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(today - (days - 1 - index) * dayMs);
+    const key = taipeiDateKey(date);
+    const { month, day } = taipeiDateParts(date);
+    return { label: `${month}/${day}`, value: counts.get(key) ?? 0 };
+  });
+}
+
 export function bucketFollowups<T extends FollowupBucketItem>(items: T[], now = new Date()): Record<FollowupBucket, T[]> {
   const result: Record<FollowupBucket, T[]> = { overdue: [], today: [], next7: [], later: [] };
   const today = taipeiDayStart(now);

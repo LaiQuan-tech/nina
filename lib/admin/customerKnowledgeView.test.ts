@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  buildDailyActivity,
   bucketFollowups,
   matchesCustomerFilters,
   mergeCustomerTimeline,
@@ -66,6 +67,18 @@ test("回訪依逾期、今天、七天內與稍後分組", () => {
   assert.deepEqual(groups.today.map((item) => item.id), ["today"]);
   assert.deepEqual(groups.next7.map((item) => item.id), ["week"]);
   assert.deepEqual(groups.later.map((item) => item.id), ["later"]);
+});
+
+test("互動量以台北日期分組，不會把今日資料算到前一天", () => {
+  const values = buildDailyActivity(
+    ["2026-08-06T04:51:05.000Z", "2026-08-05T20:00:00.000Z", "2026-08-05T10:00:00.000Z"],
+    new Date("2026-08-06T04:53:00.000Z"),
+    2,
+  );
+  assert.deepEqual(values, [
+    { label: "8/5", value: 1 },
+    { label: "8/6", value: 2 },
+  ]);
 });
 
 test("客戶樣貌 patch 接受白名單並正規化字串陣列", () => {
