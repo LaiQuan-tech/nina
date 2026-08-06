@@ -1,34 +1,30 @@
-import type { Contact } from "@/components/intake/ContactGate";
+// 「記住聯絡人」的真相在 server（會員 cookie），localStorage 只留最後用過的手機號碼
+// 供表單預填，減少客戶裝置上殘留的個資。
+const KEY = "mei_last_phone";
+const LEGACY_KEY = "nina_contact_v1"; // 舊版存整組姓名/Email/手機，登入機制上線後不再使用
 
-// 客戶聯絡資訊記憶（localStorage，僅存在客戶自己的瀏覽器）。
-const KEY = "nina_contact_v1";
-
-export function loadContact(): Contact | null {
+export function saveLastPhone(phone: string): void {
   try {
-    const raw = globalThis.localStorage?.getItem(KEY);
-    if (!raw) return null;
-    const c = JSON.parse(raw) as Partial<Contact>;
-    if (c && c.name && c.email && c.phone) {
-      return { name: String(c.name), email: String(c.email), phone: String(c.phone) };
-    }
-    return null;
+    globalThis.localStorage?.setItem(KEY, phone);
+    globalThis.localStorage?.removeItem(LEGACY_KEY);
   } catch {
-    return null;
+    /* 無痕模式或空間不足就算了，不影響流程 */
   }
 }
 
-export function saveContact(c: Contact): void {
+export function loadLastPhone(): string {
   try {
-    globalThis.localStorage?.setItem(KEY, JSON.stringify(c));
+    return globalThis.localStorage?.getItem(KEY) ?? "";
   } catch {
-    /* ignore */
+    return "";
   }
 }
 
-export function clearContact(): void {
+export function clearLastPhone(): void {
   try {
     globalThis.localStorage?.removeItem(KEY);
+    globalThis.localStorage?.removeItem(LEGACY_KEY);
   } catch {
-    /* ignore */
+    /* noop */
   }
 }

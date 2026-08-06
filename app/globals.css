@@ -1002,6 +1002,58 @@ a.adm-row:hover {
 .mei-card-box { border: 1px solid var(--mei-line); border-radius: var(--mei-r-card); background: var(--mei-paper-2); padding: 14px; font-size: 14px; line-height: 1.9; margin-bottom: 14px; }
 .mei-mono-s { font-family: var(--mei-mono); font-size: 11px; color: var(--mei-text-4); line-height: 1.7; word-break: break-all; }
 
+/* ══════════ 會員區 ══════════ */
+/* 提示卡：guest 去設密碼。用品牌紅左框，但不做成錯誤訊息的口氣 */
+.mei-notice {
+  border: 1px solid var(--mei-line);
+  border-left: 3px solid var(--mei-accent);
+  border-radius: var(--mei-r-card);
+  background: #fff;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mei-notice .t { margin: 0; font-size: 15px; font-weight: 700; }
+.mei-notice .d { margin: 0; font-size: 13.5px; line-height: 1.8; color: var(--mei-text-2); }
+.mei-notice .row { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.mei-notice .row .mei-input { flex: 1; }
+
+/* 發稿紀錄列表：桌機四欄，手機每列自成一張卡（沿用後台表格轉卡片的手法） */
+.mei-list { border: 1px solid var(--mei-line); border-radius: var(--mei-r-card); background: #fff; overflow: hidden; }
+.mei-list-head { display: none; }
+.mei-list-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--mei-line);
+  font-size: 13.5px;
+}
+.mei-list-row:last-child { border-bottom: 0; }
+.mei-list-row > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mei-list-row > span::before {
+  content: attr(data-label);
+  font-family: var(--mei-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--mei-text-4);
+}
+.mei-list-row .fn { font-weight: 600; word-break: break-all; }
+.mei-list-row .sub { color: var(--mei-text-3); font-size: 12.5px; }
+.mei-pill {
+  align-self: flex-start;
+  border: 1px solid var(--mei-line-2);
+  border-radius: var(--mei-r-pill);
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Header／頁尾的會員入口 */
+.mei-badge { display: inline-flex; align-items: center; }
+.mei-badge a { white-space: nowrap; }
+
 /* 內容頁（about / downloads 等簡頁） */
 /* 只設上下內距：用 padding 簡寫會把 .mei-pad 的左右內距洗掉 */
 .mei-doc { padding-top: 32px; padding-bottom: 56px; display: flex; flex-direction: column; gap: 18px; }
@@ -1051,6 +1103,23 @@ a.adm-row:hover {
   .mei-chat-close { display: none; }
   .mei-send { width: 36px; height: 36px; min-height: 36px; }
   .mei-fab { right: 20px; bottom: 20px; }
+
+  .mei-notice .row { flex-direction: row; align-items: center; }
+  .mei-notice .row .mei-btn { flex: 0 0 auto; }
+
+  .mei-list-head,
+  .mei-list-row { grid-template-columns: 2.2fr 1.2fr 1fr 0.8fr; gap: 14px; align-items: center; }
+  .mei-list-head {
+    display: grid;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--mei-line);
+    font-family: var(--mei-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--mei-text-4);
+  }
+  .mei-list-row > span { flex-direction: column; }
+  .mei-list-row > span::before { content: none; }
 
   /* 平板：只露三個主要選項，其餘留在漢堡裡 */
   .mei-nav { display: flex; align-items: center; gap: 22px; font-size: 13.5px; font-weight: 500; }

@@ -7,7 +7,16 @@ type Msg = { role: "user" | "model"; text: string; tone?: "ok" | "err" };
 
 const EXAMPLE = "069871_{(月匯)百陽廣告}_(78)20260625WG星雲AI地板90x100cmpvc+霧-1CCPVC720N10M.ai";
 
-export default function ChatUpload({ sessionId, contactName }: { sessionId: string; contactName?: string }) {
+export default function ChatUpload({
+  sessionId,
+  contactName,
+  onSubmitted,
+}: {
+  sessionId: string;
+  contactName?: string;
+  /** 有任何一個檔案收件成功時呼叫一次（用來在上面提示 guest 去設密碼）。 */
+  onSubmitted?: () => void;
+}) {
   const greeting = `${contactName ? contactName + "您好 👋 " : "您好 👋 "}請把印刷檔拖進來、或點下方按鈕選檔。我會先幫您檢查檔名格式；格式正確才會收件，格式不對我會告訴您怎麼修改。可以一次上傳多個檔案。`;
   const [msgs, setMsgs] = useState<Msg[]>([{ role: "model", text: greeting }]);
   const [busy, setBusy] = useState(false);
@@ -92,6 +101,7 @@ export default function ChatUpload({ sessionId, contactName }: { sessionId: stri
           tone: "ok",
           text: `✅ 送件成功！已收到您的檔案（${file.name}），我們會盡快為您處理。若還有其他檔案，可以繼續上傳。`,
         });
+        onSubmitted?.();
       } else {
         add({ role: "model", tone: "err", text: "收件失敗，請稍後再試一次。" });
       }

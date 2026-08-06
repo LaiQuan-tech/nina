@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { CHAT_OPEN_EVENT, CONTACT } from "@/lib/site/content";
+
+// 這些頁面本身就有主要動作（上傳、登入、註冊、查紀錄），
+// 右下角的浮動鈕會壓在滿版按鈕上，所以不顯示。
+const HIDE_ON = ["/upload", "/login", "/register", "/member"];
 
 type Msg = { role: "ai" | "me"; text: string };
 
@@ -11,6 +16,7 @@ const GREETING = "您好！要做什麼尺寸的輸出？也可以直接把檔�
 // 對話後端（規格問答 → 報價 → 下單 → 收稿）在 Stage 4b 接上，
 // 在那之前輸入列停用，改以「上傳稿件／LINE／來電」三個真的能用的出口承接客戶。
 export default function ChatWidget() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([{ role: "ai", text: GREETING }]);
   const [quick, setQuick] = useState<string[]>(["我要報價", "我要傳檔案", "找專員"]);
@@ -78,6 +84,8 @@ export default function ChatWidget() {
     ]);
     setQuick(["我要傳檔案", "找專員"]);
   }
+
+  if (HIDE_ON.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
 
   return (
     <>

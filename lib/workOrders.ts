@@ -70,7 +70,8 @@ export async function createWorkOrder(
   fileName: string,
   storagePath: string,
   product: ProductResolution,
-  sessionId?: string | null
+  sessionId?: string | null,
+  memberId?: string | null
 ): Promise<{ id: string; order_no: string }> {
   const db = createAdminSupabase();
   if (!db) throw new Error("db_not_configured");
@@ -80,6 +81,7 @@ export async function createWorkOrder(
       file_name: fileName,
       storage_path: storagePath,
       session_id: sessionId ?? null,
+      member_id: memberId ?? null,
       parsed: s,
       serial: s.serial,
       payment_type: s.payment,

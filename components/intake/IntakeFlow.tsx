@@ -1,81 +1,88 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ContactGate, { type Contact } from "@/components/intake/ContactGate";
-import WelcomeBack from "@/components/intake/WelcomeBack";
 import ChatUpload from "@/components/ai/ChatUpload";
-import { loadContact, clearContact } from "@/components/intake/contactStorage";
+import { SetPasswordCard } from "@/components/member/MemberActions";
+import { clearLastPhone, loadLastPhone } from "@/components/intake/contactStorage";
+
+type Member = { id: string; name: string; phone: string; phoneDisplay: string; email: string | null; status: string };
 
 type Step =
   | { name: "loading" }
-  | { name: "welcome"; contact: Contact }
-  | { name: "form"; initial: Contact | null }
-  | { name: "upload"; sessionId: string; contact: Contact };
+  | { name: "form"; initialPhone: string }
+  | { name: "upload"; sessionId: string; who: string; status: string };
 
-// 客戶流程：
-// 有記住的聯絡資訊 → WelcomeBack（一鍵開始，免再填）
-// 沒有 → ContactGate（可勾「記住我」）
-// 進入 upload 後可「換一個聯絡人」回到表單。
+function newSessionId() {
+  return globalThis.crypto?.randomUUID?.() ?? `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+}
+
+/**
+ * 收稿流程：
+ *   已登入（有 mei_member cookie）→ 完全跳過聯絡表單，直接進上傳
+ *   未登入 → ContactGate（送出時順手完成無痛入會）
+ * 第一次上傳成功後，guest 會看到「設定密碼」提示 —— 沒設密碼換裝置就進不來。
+ */
 export default function IntakeFlow() {
   const [step, setStep] = useState<Step>({ name: "loading" });
+  const [uploaded, setUploaded] = useState(false);
 
-  // client 掛載後才讀 localStorage（避免 SSR 不一致）
   useEffect(() => {
-    const saved = loadContact();
-    setStep(saved ? { name: "welcome", contact: saved } : { name: "form", initial: null });
+    let alive = true;
+    (async () => {
+      try {
+        const d = (await fetch("/api/member/session").then((r) => r.json())) as { member?: Member | null };
+        if (!alive) return;
+        if (d.member) {
+          // 已登入：直接開一個新案件掛在這個會員底下
+          const sessionId = newSessionId();
+          await fetch("/api/member/quick-start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              name: d.member.name,
+              email: d.member.email || `${d.member.phone}@no-email.local`,
+              phone: d.member.phone,
+              remember: true,
+            }),
+          }).catch(() => {});
+          if (!alive) return;
+          setStep({ name: "upload", sessionId, who: d.member.name, status: d.member.status });
+        } else {
+          setStep({ name: "form", initialPhone: loadLastPhone() });
+        }
+      } catch {
+        if (alive) setStep({ name: "form", initialPhone: loadLastPhone() });
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  // 用記住的聯絡資訊建立案件 → 進上傳
-  async function continueWithSaved(contact: Contact) {
-    const sessionId =
-      globalThis.crypto?.randomUUID?.() ?? `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    try {
-      const res = await fetch("/api/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, ...contact }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setStep({ name: "upload", sessionId, contact });
-      } else {
-        // 記住的資料失效 → 退回表單、預填
-        setStep({ name: "form", initial: contact });
-      }
-    } catch {
-      setStep({ name: "form", initial: contact });
-    }
-  }
-
-  function switchContact(prefill: Contact | null) {
-    clearContact();
-    setStep({ name: "form", initial: prefill });
-  }
+  const switchContact = useCallback(async () => {
+    clearLastPhone();
+    await fetch("/api/member/login", { method: "DELETE" }).catch(() => {});
+    setUploaded(false);
+    setStep({ name: "form", initialPhone: "" });
+  }, []);
 
   if (step.name === "loading") {
-    return <div style={{ height: 200 }} />;
-  }
-
-  if (step.name === "welcome") {
-    return (
-      <WelcomeBack
-        contact={step.contact}
-        onContinue={() => continueWithSaved(step.contact)}
-        onSwitch={() => switchContact(step.contact)}
-      />
-    );
+    return <div style={{ height: 240 }} aria-hidden="true" />;
   }
 
   if (step.name === "form") {
     return (
       <ContactGate
-        initial={step.initial}
-        onReady={(id, contact) => setStep({ name: "upload", sessionId: id, contact })}
+        initialPhone={step.initialPhone}
+        onReady={(id, contact: Contact, status) =>
+          setStep({ name: "upload", sessionId: id, who: contact.name, status })
+        }
       />
     );
   }
 
-  // upload
   return (
     <div>
       <div
@@ -90,13 +97,20 @@ export default function IntakeFlow() {
         }}
       >
         <span>
-          目前以 <strong style={{ color: "var(--mei-ink)" }}>{step.contact.name}</strong> 收稿
+          目前以 <strong style={{ color: "var(--mei-ink)" }}>{step.who}</strong> 發稿
         </span>
-        <button onClick={() => switchContact(step.contact)} className="mei-link">
+        <button onClick={switchContact} className="mei-link">
           換一個聯絡人
         </button>
       </div>
-      <ChatUpload sessionId={step.sessionId} contactName={step.contact.name} />
+
+      <ChatUpload sessionId={step.sessionId} contactName={step.who} onSubmitted={() => setUploaded(true)} />
+
+      {uploaded && step.status === "guest" && (
+        <div style={{ marginTop: 16 }}>
+          <SetPasswordCard />
+        </div>
+      )}
     </div>
   );
 }

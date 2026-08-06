@@ -4,6 +4,7 @@ import { uploadPrintFile } from "@/lib/storage";
 import { createWorkOrder } from "@/lib/workOrders";
 import { lookupProduct } from "@/lib/productLookup";
 import { markSessionSubmitted } from "@/lib/intakeSessions";
+import { getSessionMember } from "@/lib/memberSession";
 
 export const runtime = "nodejs";
 
@@ -45,8 +46,11 @@ export async function POST(req: Request) {
     ? { productName: match.name, productCode: match.code, matched: true }
     : { productName: parsed.segments.productName, productCode: null, matched: false };
 
+  // 會員身分一律從 cookie 取，不接受前端傳進來的 memberId
+  const member = await getSessionMember();
+
   try {
-    await createWorkOrder(parsed.segments, file.name, path, product, sessionId);
+    await createWorkOrder(parsed.segments, file.name, path, product, sessionId, member?.id ?? null);
   } catch (err) {
     console.error("[upload] createWorkOrder failed:", err);
     return NextResponse.json({ ok: false, error: "db_failed" }, { status: 502 });

@@ -6,10 +6,31 @@ import { openChat } from "@/components/mei/OpenChatButton";
 
 // sticky header：桌機五項 nav，手機收成右滑抽屜。
 // 捲動 >80px 時加一條底線陰影（設計稿 Interactions）。
+type Me = { name: string } | null;
+
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  // undefined = 還沒問到（先不渲染會員入口，避免登入/未登入之間閃動）
+  const [me, setMe] = useState<Me | undefined>(undefined);
+
+  // 登入狀態在 client 問，不在 layout 讀 cookie ——
+  // server 端讀 cookie 會讓整個 (site) 退出靜態渲染，首頁的 ISR 就沒了。
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/member/session")
+      .then((r) => r.json())
+      .then((d: { member?: { name: string } | null }) => {
+        if (alive) setMe(d.member ?? null);
+      })
+      .catch(() => {
+        if (alive) setMe(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // data-stuck 純粹是視覺旗標，直接寫 DOM 而不進 React state：
   // 走 state 的話每次跨過 80px 門檻都要重繪整個 header 與抽屜。
@@ -61,6 +82,11 @@ export default function SiteHeader() {
                 {n.label}
               </a>
             ))}
+            {me !== undefined && (
+              <span className="mei-badge">
+                <a href={me ? "/member" : "/login"}>{me ? "我的紀錄" : "登入"}</a>
+              </span>
+            )}
           </nav>
 
           <div className="mei-head-right">
@@ -112,6 +138,21 @@ export default function SiteHeader() {
               {n.label}
             </a>
           ))}
+          {me !== undefined &&
+            (me ? (
+              <a href="/member" onClick={() => setOpen(false)}>
+                我的發稿紀錄
+              </a>
+            ) : (
+              <>
+                <a href="/login" onClick={() => setOpen(false)}>
+                  會員登入
+                </a>
+                <a href="/register" onClick={() => setOpen(false)}>
+                  註冊新帳號
+                </a>
+              </>
+            ))}
         </nav>
 
         <div className="mei-drawer-foot">

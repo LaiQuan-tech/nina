@@ -23,6 +23,9 @@ export default function SiteFooter() {
             <a className="fbtn" href="/upload">
               上傳稿件
             </a>
+            <a className="fbtn" href="/member">
+              會員專區
+            </a>
           </div>
         </div>
 

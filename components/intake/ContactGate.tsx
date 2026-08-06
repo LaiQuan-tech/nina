@@ -1,22 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { saveContact, clearContact } from "@/components/intake/contactStorage";
+import { saveLastPhone } from "@/components/intake/contactStorage";
 
-export type Contact = { name: string; email: string; phone: string };
+export type Contact = { name: string; email: string; phone: string; company?: string };
 
-// 收稿前的聯絡資訊表單：姓名/Email/手機（三欄必填）。
-// 送出 → 產 sessionId + POST /api/session 建案件 → onReady(sessionId, contact)。
-// 勾「記住」→ 存 localStorage，下次直接跳「歡迎回來」免再填。
+/**
+ * 收稿前的聯絡資訊表單，同時也是「無痛入會」的入口 ——
+ * 送出時 /api/member/quick-start 會一併建案件、建/認會員、發登入 cookie，
+ * 客戶不會感覺到自己註冊了。
+ *
+ * 只有一種情況會多一步：這支手機已經設過密碼（回 password_required），
+ * 此時就地展開密碼欄，驗過才放行。這是為了不讓「知道手機號碼」等於「變成那個人」。
+ */
 export default function ContactGate({
   onReady,
   initial,
+  initialPhone,
 }: {
-  onReady: (sessionId: string, contact: Contact) => void;
+  onReady: (sessionId: string, contact: Contact, status: string) => void;
   initial?: Contact | null;
+  initialPhone?: string;
 }) {
-  const [form, setForm] = useState<Contact>(initial ?? { name: "", email: "", phone: "" });
+  const [form, setForm] = useState<Contact>(
+    initial ?? { name: "", email: "", phone: initialPhone ?? "", company: "" }
+  );
   const [remember, setRemember] = useState(true);
+  const [needPassword, setNeedPassword] = useState(false);
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,19 +53,34 @@ export default function ContactGate({
     const sessionId =
       globalThis.crypto?.randomUUID?.() ?? `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     try {
-      const res = await fetch("/api/session", {
+      const res = await fetch("/api/member/quick-start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, ...form }),
+        body: JSON.stringify({
+          sessionId,
+          ...form,
+          remember,
+          ...(needPassword ? { password } : {}),
+        }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as {
+        ok: boolean;
+        error?: string;
+        message?: string;
+        member?: { status: string };
+      };
+
       if (data.ok) {
-        if (remember) saveContact(form);
-        else clearContact();
-        onReady(sessionId, form);
-      } else {
-        setError("送出失敗，請確認資料後再試一次。");
+        if (remember) saveLastPhone(form.phone);
+        onReady(sessionId, form, data.member?.status ?? "guest");
+        return;
       }
+      if (data.error === "password_required") {
+        setNeedPassword(true);
+        setError(data.message ?? "這支手機已經註冊過，請輸入密碼登入");
+        return;
+      }
+      setError(data.message ?? "送出失敗，請確認資料後再試一次。");
     } catch {
       setError("連線出了點問題，請稍後再試。");
     } finally {
@@ -82,7 +108,7 @@ export default function ContactGate({
             className="mei-input"
             type={f.type}
             autoComplete={f.ac}
-            value={form[f.k]}
+            value={form[f.k] ?? ""}
             onChange={(e) => set(f.k, e.target.value)}
             placeholder={f.ph}
             required
@@ -90,9 +116,26 @@ export default function ContactGate({
         </label>
       ))}
 
+      {needPassword && (
+        <label className="mei-field" htmlFor="ct-pw">
+          <span className="mei-flabel">密碼</span>
+          <input
+            id="ct-pw"
+            className="mei-input"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="這支手機已註冊，請輸入密碼"
+            required
+            autoFocus
+          />
+        </label>
+      )}
+
       <label className="mei-check">
         <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-        <span>記住我的聯絡資訊（下次免再填）</span>
+        <span>下次自動登入（免再填聯絡資訊）</span>
       </label>
 
       {error && (
@@ -102,8 +145,15 @@ export default function ContactGate({
       )}
 
       <button type="submit" disabled={loading} className="mei-btn mei-btn-primary" style={{ width: "100%", minHeight: 48 }}>
-        {loading ? "處理中…" : "開始上傳印刷檔"}
+        {loading ? "處理中…" : needPassword ? "登入並開始上傳" : "開始上傳印刷檔"}
       </button>
+
+      <p className="mei-note" style={{ marginTop: 14, fontSize: 13 }}>
+        已經是會員？
+        <a href="/login?next=/upload" style={{ color: "var(--mei-accent)", fontWeight: 700 }}>
+          登入
+        </a>
+      </p>
     </form>
   );
 }
