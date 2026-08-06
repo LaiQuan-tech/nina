@@ -4,6 +4,7 @@ import {
   bucketFollowups,
   matchesCustomerFilters,
   mergeCustomerTimeline,
+  validateFollowupInput,
   validateCustomerProfilePatch,
 } from "./customerKnowledgeView";
 
@@ -92,4 +93,35 @@ test("客戶樣貌 patch 拒絕未知欄位、錯誤列舉與過長內容", () =
   assert.equal(validateCustomerProfilePatch({ customerTier: "super" }).ok, false);
   assert.equal(validateCustomerProfilePatch({ aiSummary: "x".repeat(2001) }).ok, false);
   assert.equal(validateCustomerProfilePatch({ preferredMaterials: Array(13).fill("帆布") }).ok, false);
+});
+
+test("新增回訪會驗證並轉換安全欄位", () => {
+  assert.deepEqual(
+    validateFollowupInput({
+      memberId: "10000000-0000-4000-8000-000000000001",
+      title: " 確認新檔期 ",
+      reason: "詢問活動背板",
+      priority: "high",
+      assignee: "王小美",
+      dueAt: "2026-08-10T10:00:00+08:00",
+    }, "create"),
+    {
+      ok: true,
+      value: {
+        member_id: "10000000-0000-4000-8000-000000000001",
+        title: "確認新檔期",
+        reason: "詢問活動背板",
+        priority: "high",
+        assignee: "王小美",
+        due_at: "2026-08-10T02:00:00.000Z",
+      },
+    }
+  );
+});
+
+test("回訪輸入拒絕未知欄位、非 UUID、錯誤日期與錯誤狀態", () => {
+  assert.equal(validateFollowupInput({ memberId: "x", title: "追蹤", dueAt: "2026-08-10" }, "create").ok, false);
+  assert.equal(validateFollowupInput({ memberId: "10000000-0000-4000-8000-000000000001", title: "追蹤", dueAt: "not-date" }, "create").ok, false);
+  assert.equal(validateFollowupInput({ status: "deleted" }, "update").ok, false);
+  assert.equal(validateFollowupInput({ isDemo: false }, "update").ok, false);
 });

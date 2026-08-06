@@ -129,3 +129,54 @@ export function validateCustomerProfilePatch(input: unknown): ProfilePatchValida
   }
   return { ok: true, value };
 }
+
+export type FollowupValidation = { ok: true; value: Record<string, string | null> } | { ok: false; error: string };
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const FOLLOWUP_FIELDS = new Set(["memberId", "title", "reason", "priority", "status", "assignee", "dueAt"]);
+
+export function validateFollowupInput(input: unknown, mode: "create" | "update"): FollowupValidation {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return { ok: false, error: "invalid_body" };
+  const body = input as Record<string, unknown>;
+  const keys = Object.keys(body);
+  if (keys.length === 0 || keys.some((key) => !FOLLOWUP_FIELDS.has(key))) return { ok: false, error: "unknown_field" };
+  if (mode === "create") {
+    if (typeof body.memberId !== "string" || !UUID_PATTERN.test(body.memberId)) return { ok: false, error: "invalid_member" };
+    if (typeof body.title !== "string" || !body.title.trim()) return { ok: false, error: "invalid_title" };
+    if (typeof body.dueAt !== "string") return { ok: false, error: "invalid_due_at" };
+  } else if ("memberId" in body) {
+    return { ok: false, error: "immutable_member" };
+  }
+
+  const value: Record<string, string | null> = {};
+  if (typeof body.memberId === "string") value.member_id = body.memberId;
+  for (const [inputKey, dbKey, max] of [
+    ["title", "title", 160],
+    ["reason", "reason", 1000],
+    ["assignee", "assignee", 80],
+  ] as const) {
+    if (!(inputKey in body)) continue;
+    const raw = body[inputKey];
+    if (raw !== null && typeof raw !== "string") return { ok: false, error: `invalid_${inputKey}` };
+    const text = typeof raw === "string" ? raw.trim() : null;
+    if ((text?.length ?? 0) > max || (inputKey === "title" && !text)) return { ok: false, error: `invalid_${inputKey}` };
+    value[dbKey] = text || null;
+  }
+  if ("priority" in body) {
+    if (typeof body.priority !== "string" || !["low", "medium", "high"].includes(body.priority)) return { ok: false, error: "invalid_priority" };
+    value.priority = body.priority;
+  } else if (mode === "create") {
+    value.priority = "medium";
+  }
+  if ("status" in body) {
+    if (typeof body.status !== "string" || !["open", "completed", "cancelled"].includes(body.status)) return { ok: false, error: "invalid_status" };
+    value.status = body.status;
+  }
+  if ("dueAt" in body) {
+    if (typeof body.dueAt !== "string" || !body.dueAt.includes("T")) return { ok: false, error: "invalid_due_at" };
+    const parsed = new Date(body.dueAt);
+    if (Number.isNaN(parsed.getTime())) return { ok: false, error: "invalid_due_at" };
+    value.due_at = parsed.toISOString();
+  }
+  return { ok: true, value };
+}
