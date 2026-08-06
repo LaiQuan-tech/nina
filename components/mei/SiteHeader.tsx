@@ -64,9 +64,10 @@ export default function SiteHeader() {
           </nav>
 
           <div className="mei-head-right">
-            <button type="button" className="mei-cta" onClick={() => openChat()}>
-              線上詢價
-            </button>
+            {/* 熟客最常做的動作是直接發稿；詢價入口在 hero 按鈕與右下角 AI 視窗 */}
+            <a className="mei-cta" href="/upload">
+              上傳稿件
+            </a>
             <button
               type="button"
               className="mei-burger"

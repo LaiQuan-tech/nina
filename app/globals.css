@@ -491,7 +491,8 @@ a.adm-row:hover {
   border: none;
   background: transparent;
   border-radius: var(--mei-r-btn);
-  padding: 13px 24px;
+  /* 內距壓在 min-height 之下，實心鈕與外框鈕（多 1.5px 邊）才會等高 */
+  padding: 11px 24px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -588,8 +589,10 @@ a.adm-row:hover {
 .mei-cta {
   border: 1.5px solid var(--mei-ink);
   border-radius: var(--mei-r-pill);
-  padding: 12px 16px;
-  font-size: 13.5px;
+  padding: 0 15px;
+  height: 40px;
+  min-height: 40px;
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
   background: transparent;
@@ -597,9 +600,13 @@ a.adm-row:hover {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   transition: background-color 0.15s ease-out, color 0.15s ease-out;
 }
 .mei-cta:hover { background: var(--mei-ink); color: var(--mei-paper); }
+/* 藥丸看起來 40px 才不會把 header 塞滿，但點擊區用 ::after 撐到 46px 維持觸控規範 */
+.mei-cta { position: relative; }
+.mei-cta::after { content: ""; position: absolute; inset: -3px -2px; border-radius: inherit; }
 .mei-burger {
   width: 44px;
   height: 44px;
