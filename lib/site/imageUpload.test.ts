@@ -4,6 +4,7 @@ import {
   MAX_SITE_IMAGE_BYTES,
   buildStoragePath,
   findImageSlot,
+  validateSiteImageInput,
   validateImageBytes,
 } from "./imageUpload";
 import { mapReadyRows } from "./siteImages";
@@ -107,4 +108,20 @@ test("mapReadyRows 只映射啟用、ready 且有網址的圖片", () => {
       height: 1600,
     },
   });
+});
+
+test("validateSiteImageInput 拒絕未知圖片位", () => {
+  assert.deepEqual(validateSiteImageInput("unknown.slot", jpeg, "image/jpeg", jpeg.byteLength), {
+    ok: false,
+    error: "unknown_slot",
+  });
+});
+
+test("validateSiteImageInput 回傳可信圖片位與實際格式", () => {
+  const result = validateSiteImageInput("hero.main", webp, "image/webp", webp.byteLength);
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.slot.slotKey, "hero.main");
+    assert.equal(result.extension, "webp");
+  }
 });

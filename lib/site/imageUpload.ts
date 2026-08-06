@@ -9,6 +9,8 @@ export type SiteImageValidationError =
   | "unsupported_type"
   | "invalid_signature";
 
+export type SiteImageInputError = SiteImageValidationError | "unknown_slot";
+
 type ValidationResult =
   | { ok: true; extension: SiteImageExtension }
   | { ok: false; error: SiteImageValidationError };
@@ -50,6 +52,21 @@ export function validateImageBytes(bytes: Uint8Array, mimeType: string, declared
   if (!format) return { ok: false, error: "unsupported_type" };
   if (!format.matches(bytes)) return { ok: false, error: "invalid_signature" };
   return { ok: true, extension: format.extension };
+}
+
+export function validateSiteImageInput(
+  slotKey: string,
+  bytes: Uint8Array,
+  mimeType: string,
+  declaredSize: number
+):
+  | { ok: true; slot: ImageSlot; extension: SiteImageExtension }
+  | { ok: false; error: SiteImageInputError } {
+  const slot = findImageSlot(slotKey);
+  if (!slot) return { ok: false, error: "unknown_slot" };
+  const image = validateImageBytes(bytes, mimeType, declaredSize);
+  if (!image.ok) return image;
+  return { ok: true, slot, extension: image.extension };
 }
 
 export function buildStoragePath(
