@@ -8,9 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test lib/filename/parser.test.ts lib/site/imageUpload.test.ts lib/admin/customerKnowledgeView.test.ts",
+    "test": "node --import tsx --test lib/filename/parser.test.ts lib/site/imageUpload.test.ts lib/admin/customerKnowledgeView.test.ts lib/admin/demoSeedManifest.test.ts",
     "test:parser": "node --import tsx --test lib/filename/parser.test.ts",
-    "seed:site-images": "tsx scripts/seedSiteImages.ts"
+    "seed:site-images": "tsx scripts/seedSiteImages.ts",
+    "seed:demo-crm": "tsx scripts/seedDemoCrm.ts",
+    "clean:demo-crm": "tsx scripts/seedDemoCrm.ts --clean"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
