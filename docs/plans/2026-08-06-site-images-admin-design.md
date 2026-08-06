@@ -67,4 +67,3 @@
 - 後台確認可上傳與替換，各種錯誤不會移除原圖。
 - 執行測試、TypeScript／Lint 與 production build。
 - 檢查桌機及手機 Hero 裁切，以及服務卡和作品牆的圖片比例。
-

@@ -16,7 +16,7 @@
   - ⚠️ 區塊樣式**不要用 `padding` 簡寫**，會把 `.mei-pad` 的左右內距洗掉；只寫 `padding-top` / `padding-bottom`。
 - 圖片位走 `components/mei/Slot.tsx`：有圖顯示圖，沒圖 fallback 成條紋佔位＋mono 標籤。目前共 14 個圖位（桌機／手機 Hero 2＋服務 8＋作品 4），由 `site_images` 讀取。
 - 初始寫實示意圖存於 `public/generated/site/`；執行 `npm run seed:site-images` 可冪等上傳至 `site-media` 並建立／更新 14 筆圖片資料。
-- 管理員可在 `/admin/site-images` 預覽、上傳及替換 JPG／PNG／WebP 圖片；單檔上限 8 MB。更新後首頁快取會立即失效。
+- 管理員可在 `/admin/site-images` 預覽、上傳及替換 JPG／PNG／WebP 圖片；單檔上限 4 MB。更新後首頁快取會立即失效。
 - Logo：`public/logo-mei.png`（去背 500×500 PNG）。原始檔在 `design_handoff_mei5899_web/assets/logo-source.jpg`（2048×2048，**不要直接開，先 `sips -Z 1024` 產縮圖**）。
 
 ## 客戶／後台流程

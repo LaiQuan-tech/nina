@@ -7,6 +7,7 @@ import {
   validateSiteImageInput,
   validateImageBytes,
 } from "./imageUpload";
+import { decodeImageMetadata } from "./imageDecode";
 import { mapReadyRows } from "./siteImages";
 import { groupAdminImages, replaceAdminImage } from "./siteImagesAdminState";
 import type { SiteImageAdminRecord } from "./siteImages";
@@ -56,7 +57,7 @@ test("validateImageBytes 拒絕 MIME 與 magic bytes 不符的偽裝圖片", () 
   });
 });
 
-test("validateImageBytes 拒絕空檔與超過 8 MiB 的圖片", () => {
+test("validateImageBytes 拒絕空檔與超過 4 MiB 的圖片", () => {
   assert.deepEqual(validateImageBytes(new Uint8Array(), "image/png", 0), {
     ok: false,
     error: "empty_file",
@@ -65,6 +66,15 @@ test("validateImageBytes 拒絕空檔與超過 8 MiB 的圖片", () => {
     ok: false,
     error: "too_large",
   });
+});
+
+test("decodeImageMetadata 會解碼完整圖片並拒絕只有合法檔頭的損壞檔", async () => {
+  const validPng = Uint8Array.from(
+    Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64")
+  );
+
+  assert.deepEqual(await decodeImageMetadata(validPng, "png"), { ok: true, width: 1, height: 1 });
+  assert.deepEqual(await decodeImageMetadata(webp, "webp"), { ok: false, error: "invalid_image" });
 });
 
 test("buildStoragePath 產生版本化且不含使用者檔名的安全路徑", () => {

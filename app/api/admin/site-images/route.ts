@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { ADMIN_COOKIE, readSessionToken } from "@/lib/adminAuth";
+import { decodeImageMetadata } from "@/lib/site/imageDecode";
 import { MAX_SITE_IMAGE_BYTES, validateSiteImageInput } from "@/lib/site/imageUpload";
 import { listSiteImageRecords, uploadSiteImage } from "@/lib/site/siteImages";
 
@@ -10,9 +11,10 @@ export const runtime = "nodejs";
 const ERROR_MESSAGES: Record<string, string> = {
   unknown_slot: "找不到這個圖片位置",
   empty_file: "請選擇圖片檔",
-  too_large: "圖片不可超過 8 MB",
+  too_large: "圖片不可超過 4 MB",
   unsupported_type: "只接受 JPG、PNG 或 WebP",
   invalid_signature: "檔案內容不是有效的圖片格式",
+  invalid_image: "圖片已損壞或無法解碼",
 };
 
 async function currentAdminId(): Promise<string | null> {
@@ -20,12 +22,6 @@ async function currentAdminId(): Promise<string | null> {
   const secret = process.env.ADMIN_SESSION_SECRET;
   if (!token || !secret) return null;
   return (await readSessionToken(token, secret))?.sub ?? null;
-}
-
-function safeDimension(value: FormDataEntryValue | null): number | undefined {
-  if (typeof value !== "string" || !/^\d{1,5}$/.test(value)) return undefined;
-  const dimension = Number(value);
-  return dimension >= 1 && dimension <= 20_000 ? dimension : undefined;
 }
 
 function hasTrustedOrigin(req: Request): boolean {
@@ -77,6 +73,14 @@ export async function POST(req: Request) {
     );
   }
 
+  const decoded = await decodeImageMetadata(bytes, validation.extension);
+  if (!decoded.ok) {
+    return NextResponse.json(
+      { ok: false, error: decoded.error, message: ERROR_MESSAGES[decoded.error] },
+      { status: 400 }
+    );
+  }
+
   try {
     const image = await uploadSiteImage({
       slot: validation.slot,
@@ -84,8 +88,8 @@ export async function POST(req: Request) {
       mimeType: file.type,
       extension: validation.extension,
       adminId,
-      width: safeDimension(form.get("width")),
-      height: safeDimension(form.get("height")),
+      width: decoded.width,
+      height: decoded.height,
     });
     revalidatePath("/");
     return NextResponse.json({ ok: true, image });

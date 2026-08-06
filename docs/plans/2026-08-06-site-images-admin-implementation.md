@@ -25,7 +25,7 @@
 - 未定義的 `slotKey` 回傳 `null`。
 - JPEG、PNG、WebP 的 MIME 與 magic bytes 可通過。
 - 偽裝成圖片的內容被拒絕。
-- 超過 8 MiB 的檔案被拒絕。
+- 超過 4 MiB 的檔案被拒絕。
 - `buildStoragePath` 只產生安全字元、版本化且副檔名由實際格式決定。
 
 **Step 2: Run test to verify it fails**
@@ -251,4 +251,3 @@ Expected: tests and build PASS; no newly introduced high/critical vulnerability.
 Run: `git status --short --branch && git log --oneline -8`
 
 Expected: only intentional changes, or clean after commits.
-

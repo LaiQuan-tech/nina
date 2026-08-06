@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { GENERATED_SITE_IMAGES } from "../lib/site/generatedImageManifest";
 import { IMAGE_SLOTS } from "../lib/site/imageSlots";
@@ -37,8 +38,9 @@ async function main() {
     if (!slot) throw new Error(`未知圖片位：${image.slotKey}`);
 
     const localPath = path.join(projectRoot, "public", "generated", "site", image.fileName);
-    const storagePath = `generated/2026-08-06/${image.fileName}`;
     const bytes = fs.readFileSync(localPath);
+    const contentHash = createHash("sha256").update(bytes).digest("hex").slice(0, 16);
+    const storagePath = `generated/${image.slotKey.replace(/\./g, "-")}/${contentHash}.webp`;
     const { error: uploadError } = await db.storage.from("site-media").upload(storagePath, bytes, {
       contentType: "image/webp",
       cacheControl: "31536000",

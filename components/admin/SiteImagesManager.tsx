@@ -5,7 +5,7 @@ import type { SiteImageAdminRecord } from "@/lib/site/siteImages";
 import { groupAdminImages, replaceAdminImage } from "@/lib/site/siteImagesAdminState";
 import { MAX_SITE_IMAGE_BYTES } from "@/lib/site/imageUpload";
 
-type Draft = { file: File; previewUrl: string; width?: number; height?: number };
+type Draft = { file: File; previewUrl: string };
 type Notice = { kind: "success" | "error"; message: string };
 
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -33,7 +33,7 @@ export default function SiteImagesManager({ initial }: { initial: SiteImageAdmin
       return;
     }
     if (file.size > MAX_SITE_IMAGE_BYTES) {
-      setNotice(slotKey, { kind: "error", message: "圖片不可超過 8 MB" });
+      setNotice(slotKey, { kind: "error", message: "圖片不可超過 4 MB" });
       return;
     }
 
@@ -51,16 +51,6 @@ export default function SiteImagesManager({ initial }: { initial: SiteImageAdmin
       delete next[slotKey];
       return next;
     });
-
-    const probe = new Image();
-    probe.onload = () => {
-      setDrafts((current) => {
-        const draft = current[slotKey];
-        if (!draft || draft.previewUrl !== previewUrl) return current;
-        return { ...current, [slotKey]: { ...draft, width: probe.naturalWidth, height: probe.naturalHeight } };
-      });
-    };
-    probe.src = previewUrl;
   }
 
   async function upload(slotKey: string) {
@@ -72,8 +62,6 @@ export default function SiteImagesManager({ initial }: { initial: SiteImageAdmin
     const form = new FormData();
     form.set("slotKey", slotKey);
     form.set("file", draft.file);
-    if (draft.width) form.set("width", String(draft.width));
-    if (draft.height) form.set("height", String(draft.height));
 
     try {
       const response = await fetch("/api/admin/site-images", { method: "POST", body: form });

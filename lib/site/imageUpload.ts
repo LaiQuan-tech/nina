@@ -1,6 +1,7 @@
 import { IMAGE_SLOTS, type ImageSlot } from "./imageSlots";
 
-export const MAX_SITE_IMAGE_BYTES = 8 * 1024 * 1024;
+// Keep below Vercel Functions' 4.5 MB request-body limit so multipart overhead fits.
+export const MAX_SITE_IMAGE_BYTES = 4 * 1024 * 1024;
 
 export type SiteImageExtension = "jpg" | "png" | "webp";
 export type SiteImageValidationError =

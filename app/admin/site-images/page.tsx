@@ -13,7 +13,7 @@ export default async function SiteImagesPage() {
         <div className="adm-site-title">
           <div>
             <h1>網站圖片</h1>
-            <p>管理首頁主視覺、服務項目與作品案例。支援 JPG、PNG、WebP，單檔上限 8 MB。</p>
+            <p>管理首頁主視覺、服務項目與作品案例。支援 JPG、PNG、WebP，單檔上限 4 MB。</p>
           </div>
           <a href="/" target="_blank" rel="noopener noreferrer">
             開啟前台 ↗
