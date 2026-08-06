@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "node --import tsx --test lib/filename/parser.test.ts lib/site/imageUpload.test.ts",
     "test:parser": "node --import tsx --test lib/filename/parser.test.ts"
   },
   "dependencies": {
