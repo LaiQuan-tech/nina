@@ -3,8 +3,12 @@ import test from "node:test";
 import {
   buildDailyActivity,
   bucketFollowups,
+  historicalEventAt,
+  latestHistoricalEventAt,
   matchesCustomerFilters,
   mergeCustomerTimeline,
+  sortCustomersByLastInteraction,
+  taipeiCalendarBoundaries,
   validateFollowupInput,
   validateCustomerProfilePatch,
 } from "./customerKnowledgeView";
@@ -52,6 +56,36 @@ test("跨來源歷程依時間新到舊排序", () => {
   );
 });
 
+test("歷史事件固定使用 created_at，不受 Demo 重灌刷新 updated_at 影響", () => {
+  assert.equal(
+    historicalEventAt({
+      created_at: "2026-07-20T08:00:00Z",
+      updated_at: "2026-08-06T04:51:05Z",
+    }),
+    "2026-07-20T08:00:00Z",
+  );
+});
+
+test("最近互動以各事件 created_at 判定，不會全部變成重灌時間", () => {
+  assert.equal(
+    latestHistoricalEventAt([
+      { created_at: "2026-07-20T08:00:00Z", updated_at: "2026-08-06T04:51:05Z" },
+      { created_at: "2026-08-02T08:00:00Z", updated_at: "2026-08-06T04:51:05Z" },
+      { created_at: "2026-07-28T08:00:00Z", updated_at: "2026-08-06T04:51:05Z" },
+    ]),
+    "2026-08-02T08:00:00Z",
+  );
+});
+
+test("最近互動客戶依穩定事件時間排序", () => {
+  const customers = sortCustomersByLastInteraction([
+    { id: "older", lastInteractionAt: "2026-07-20T08:00:00Z" },
+    { id: "newer", lastInteractionAt: "2026-08-02T08:00:00Z" },
+    { id: "none", lastInteractionAt: null },
+  ]);
+  assert.deepEqual(customers.map((customer) => customer.id), ["newer", "older", "none"]);
+});
+
 test("回訪依逾期、今天、七天內與稍後分組", () => {
   const groups = bucketFollowups(
     [
@@ -79,6 +113,26 @@ test("互動量以台北日期分組，不會把今日資料算到前一天", ()
     { label: "8/5", value: 1 },
     { label: "8/6", value: 2 },
   ]);
+});
+
+test("台北跨月後即使 Vercel 仍是 UTC 前一日，也使用台北本月與今日起點", () => {
+  assert.deepEqual(
+    taipeiCalendarBoundaries(new Date("2026-08-31T16:30:00.000Z")),
+    {
+      monthStart: Date.parse("2026-08-31T16:00:00.000Z"),
+      todayStart: Date.parse("2026-08-31T16:00:00.000Z"),
+    },
+  );
+});
+
+test("台北跨年日曆邊界會正確回到一月一日零時", () => {
+  assert.deepEqual(
+    taipeiCalendarBoundaries(new Date("2026-12-31T16:15:00.000Z")),
+    {
+      monthStart: Date.parse("2026-12-31T16:00:00.000Z"),
+      todayStart: Date.parse("2026-12-31T16:00:00.000Z"),
+    },
+  );
 });
 
 test("客戶樣貌 patch 接受白名單並正規化字串陣列", () => {

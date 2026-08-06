@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
-import { getWorkOrder } from "@/lib/workOrders";
+import { getWorkOrder, isWorkOrderReadOnly } from "@/lib/workOrders";
 import WorkOrderSheet from "@/components/order/WorkOrderSheet";
 import OrderEditForm from "@/components/order/OrderEditForm";
 import PrintButton from "@/components/order/PrintButton";
@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminOrderPage({ params }: { params: { id: string } }) {
   const order = await getWorkOrder(params.id);
   if (!order) notFound();
+  const readOnly = isWorkOrderReadOnly(order);
 
   const backHref = order.session_id ? `/admin/cases` : "/admin";
 
@@ -21,18 +22,24 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
             ← 回後台
           </a>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <a
-              href={`/api/admin/order/${order.id}/download`}
-              style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: "9px 16px", background: "#fff", color: "#1c1c1e", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
-            >
-              ⬇️ 下載印刷檔
-            </a>
+            {readOnly ? (
+              <span style={{ border: "1px solid #f3df9b", borderRadius: 999, padding: "7px 12px", background: "#fff8dc", color: "#765b00", fontSize: 12, fontWeight: 700 }}>
+                Demo 資料 · 僅供檢視
+              </span>
+            ) : (
+              <a
+                href={`/api/admin/order/${order.id}/download`}
+                style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: "9px 16px", background: "#fff", color: "#1c1c1e", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+              >
+                ⬇️ 下載印刷檔
+              </a>
+            )}
             <PrintButton />
           </div>
         </div>
 
         <WorkOrderSheet order={order} />
-        <OrderEditForm order={order} className="no-print" />
+        {!readOnly && <OrderEditForm order={order} className="no-print" />}
       </main>
     </AdminShell>
   );

@@ -3,6 +3,8 @@ import test from "node:test";
 import {
   buildFallbackAssistantReply,
   classifyAdminAssistantIntent,
+  classifyFollowupTimeScope,
+  normalizeAssistantReply,
   validateAdminAssistantInput,
 } from "./adminAssistant";
 
@@ -37,6 +39,12 @@ test("問題會分流到固定的只讀報表意圖", () => {
   assert.equal(classifyAdminAssistantIntent("整理目前營運概況"), "overview");
 });
 
+test("同時提到今天與逾期時，逾期條件優先", () => {
+  assert.equal(classifyFollowupTimeScope("今天有哪些逾期回訪？"), "overdue");
+  assert.equal(classifyFollowupTimeScope("今天要聯絡誰？"), "today");
+  assert.equal(classifyFollowupTimeScope("全部待追蹤客戶"), "all");
+});
+
 test("固定格式報表只使用提供的數據", () => {
   const reply = buildFallbackAssistantReply("overview", {
     generatedAt: "2026-08-06T04:00:00.000Z",
@@ -56,4 +64,11 @@ test("固定格式報表只使用提供的數據", () => {
   assert.match(reply, /10 位 Demo 客戶/);
   assert.match(reply, /本月新增 2 位/);
   assert.match(reply, /逾期 3 件/);
+});
+
+test("AI 回覆會移除不適合純文字介面的 Markdown 裝飾", () => {
+  assert.equal(
+    normalizeAssistantReply("## 營運摘要\n**客戶數**：10 位\n- 待回訪：3 件"),
+    "營運摘要\n客戶數：10 位\n- 待回訪：3 件",
+  );
 });

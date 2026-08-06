@@ -45,6 +45,7 @@ export type AdminAssistantSnapshot = {
 
 export type AdminAssistantInput = { query: string; history: ChatTurn[] };
 export type AdminAssistantValidation = { ok: true; value: AdminAssistantInput } | { ok: false; error: string };
+export type FollowupTimeScope = "overdue" | "today" | "all";
 
 export function validateAdminAssistantInput(input: unknown): AdminAssistantValidation {
   if (!input || typeof input !== "object" || Array.isArray(input)) return { ok: false, error: "invalid_body" };
@@ -78,6 +79,19 @@ export function classifyAdminAssistantIntent(query: string): AdminAssistantInten
   if (/材質|材料|產品|品項/.test(text)) return "materials";
   if (/營運|概況|總覽|數據|摘要|報表/.test(text)) return "overview";
   return "general";
+}
+
+export function classifyFollowupTimeScope(query: string): FollowupTimeScope {
+  if (/逾期/.test(query)) return "overdue";
+  if (/今天|今日/.test(query)) return "today";
+  return "all";
+}
+
+export function normalizeAssistantReply(reply: string): string {
+  return reply
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\*\*/g, "")
+    .trim();
 }
 
 function shortDate(value: string): string {

@@ -1,6 +1,7 @@
 import {
   buildFallbackAssistantReply,
   classifyAdminAssistantIntent,
+  classifyFollowupTimeScope,
   type AdminAssistantIntent,
   type AdminAssistantSnapshot,
 } from "./adminAssistant";
@@ -33,8 +34,9 @@ export async function buildAdminAssistantReport(query: string): Promise<AdminAss
   ]);
 
   let followups = allFollowups.filter((item) => item.status === "open");
-  if (/逾期/.test(query)) followups = bucketFollowups(followups).overdue;
-  if (/今天|今日/.test(query)) followups = bucketFollowups(followups).today;
+  const followupScope = classifyFollowupTimeScope(query);
+  if (followupScope === "overdue") followups = bucketFollowups(followups).overdue;
+  else if (followupScope === "today") followups = bucketFollowups(followups).today;
 
   const snapshot: AdminAssistantSnapshot = {
     generatedAt: new Date().toISOString(),

@@ -1,8 +1,12 @@
 import { createAdminSupabase } from "@/lib/supabase";
 import {
   buildDailyActivity,
+  historicalEventAt,
+  latestHistoricalEventAt,
   matchesCustomerFilters,
   mergeCustomerTimeline,
+  sortCustomersByLastInteraction,
+  taipeiCalendarBoundaries,
   type CustomerFilters,
   type CustomerTimelineEvent,
 } from "./customerKnowledgeView";
@@ -153,10 +157,6 @@ async function loadDemoCollections(): Promise<DemoCollections> {
   };
 }
 
-function latest(values: Array<string | null | undefined>): string | null {
-  return values.filter(Boolean).sort((a, b) => new Date(b!).getTime() - new Date(a!).getTime())[0] ?? null;
-}
-
 function toFollowup(row: any, member?: MemberRow): CustomerFollowup {
   return {
     id: row.id,
@@ -193,13 +193,7 @@ function buildCustomers(data: DemoCollections): KnowledgeCustomer[] {
       paidOrderCount: member.paid_order_count,
       createdAt: member.created_at,
       profile: profileByMember.get(member.id) ?? { member_id: member.id, ...EMPTY_PROFILE },
-      lastInteractionAt: latest([
-        member.updated_at,
-        ...sessions.map((row) => row.updated_at),
-        ...quotes.map((row) => row.updated_at),
-        ...orders.map((row) => row.updated_at),
-        ...followups.map((row) => row.updated_at),
-      ]),
+      lastInteractionAt: latestHistoricalEventAt([member, ...sessions, ...quotes, ...orders, ...followups]),
       sessionCount: sessions.length,
       quoteCount: quotes.length,
       orderCount: orders.length,
@@ -210,7 +204,7 @@ function buildCustomers(data: DemoCollections): KnowledgeCustomer[] {
 
 export async function listKnowledgeCustomers(filters: CustomerFilters = {}): Promise<KnowledgeCustomer[]> {
   const customers = buildCustomers(await loadDemoCollections());
-  return customers
+  return sortCustomersByLastInteraction(customers
     .filter((customer) => matchesCustomerFilters({
       name: customer.name,
       company: customer.company,
@@ -219,8 +213,7 @@ export async function listKnowledgeCustomers(filters: CustomerFilters = {}): Pro
       customerTier: customer.profile.customer_tier,
       status: customer.status,
       tags: customer.profile.tags,
-    }, filters))
-    .sort((a, b) => new Date(b.lastInteractionAt ?? 0).getTime() - new Date(a.lastInteractionAt ?? 0).getTime());
+    }, filters)));
 }
 
 export async function getKnowledgeCustomer(id: string): Promise<KnowledgeCustomerDetail | null> {
@@ -231,13 +224,13 @@ export async function getKnowledgeCustomer(id: string): Promise<KnowledgeCustome
   const followups = data.followups.filter((row) => row.member_id === id).map((row) => toFollowup(row, member));
   const timeline = mergeCustomerTimeline({
     sessions: data.sessions.filter((row) => row.member_id === id).map((row) => ({
-      id: row.id, at: row.updated_at, title: "客戶對話與需求", detail: (row.messages ?? []).map((message: any) => message.text).join("　"), status: row.status,
+      id: row.id, at: historicalEventAt(row), title: "客戶對話與需求", detail: (row.messages ?? []).map((message: any) => message.text).join("　"), status: row.status,
     })),
     quotes: data.quotes.filter((row) => row.member_id === id).map((row) => ({
-      id: row.id, at: row.updated_at, title: `${row.quote_no}｜${row.title}`, detail: `報價 NT$ ${Number(row.amount).toLocaleString("zh-TW")}`, status: row.status,
+      id: row.id, at: historicalEventAt(row), title: `${row.quote_no}｜${row.title}`, detail: `報價 NT$ ${Number(row.amount).toLocaleString("zh-TW")}`, status: row.status,
     })),
     orders: data.orders.filter((row) => row.member_id === id).map((row) => ({
-      id: row.id, at: row.updated_at, title: `${row.order_no}｜${row.design_name || row.product_name || row.file_name}`, detail: [row.material_raw, row.processing_items].filter(Boolean).join(" · "), status: row.status,
+      id: row.id, at: historicalEventAt(row), title: `${row.order_no}｜${row.design_name || row.product_name || row.file_name}`, detail: [row.material_raw, row.processing_items].filter(Boolean).join(" · "), status: row.status,
     })),
     followups: followups.map((row) => ({ id: row.id, at: row.dueAt, title: row.title, detail: row.reason ?? "", status: row.status })),
   });
@@ -255,8 +248,7 @@ export async function getDemoDashboard(now = new Date()): Promise<DemoDashboard>
   const customers = buildCustomers(data);
   const membersById = new Map(data.members.map((row) => [row.id, row]));
   const followups = data.followups.map((row) => toFollowup(row, membersById.get(row.member_id)));
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const { monthStart, todayStart } = taipeiCalendarBoundaries(now);
   // 圖表呈現事件發生日；updated_at 會因 Demo upsert trigger 全部變成灌資料當下，不能代表互動分布。
   const activityDates = [...data.sessions.map((row) => row.created_at), ...data.quotes.map((row) => row.created_at), ...data.orders.map((row) => row.created_at)];
   const dailyActivity = buildDailyActivity(activityDates, now);
@@ -271,7 +263,7 @@ export async function getDemoDashboard(now = new Date()): Promise<DemoDashboard>
     materialCounts: countBy(customers.flatMap((row) => row.profile.preferred_materials)).slice(0, 6),
     dailyActivity,
     upcomingFollowups: followups.filter((row) => row.status === "open").sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()).slice(0, 5),
-    recentCustomers: customers.slice(0, 5),
+    recentCustomers: sortCustomersByLastInteraction(customers).slice(0, 5),
   };
 }
 
@@ -289,19 +281,19 @@ export async function searchServiceKnowledge(query = "", type = "all"): Promise<
     for (const row of data.sessions) {
       const member = members.get(row.member_id);
       const excerpt = (row.messages ?? []).map((message: any) => message.text).join("　");
-      results.push({ id: row.id, type: "conversation", memberId: row.member_id, customerName: member?.name ?? "未知客戶", company: member?.company ?? null, title: "對話與需求紀錄", excerpt, status: row.status, at: row.updated_at, href: `/admin/customers/${row.member_id}` });
+      results.push({ id: row.id, type: "conversation", memberId: row.member_id, customerName: member?.name ?? "未知客戶", company: member?.company ?? null, title: "對話與需求紀錄", excerpt, status: row.status, at: historicalEventAt(row), href: `/admin/customers/${row.member_id}` });
     }
   }
   if (type === "all" || type === "quote") {
     for (const row of data.quotes) {
       const member = members.get(row.member_id);
-      results.push({ id: row.id, type: "quote", memberId: row.member_id, customerName: member?.name ?? "未知客戶", company: member?.company ?? null, title: `${row.quote_no}｜${row.title}`, excerpt: `NT$ ${Number(row.amount).toLocaleString("zh-TW")}`, status: row.status, at: row.updated_at, href: `/admin/customers/${row.member_id}` });
+      results.push({ id: row.id, type: "quote", memberId: row.member_id, customerName: member?.name ?? "未知客戶", company: member?.company ?? null, title: `${row.quote_no}｜${row.title}`, excerpt: `NT$ ${Number(row.amount).toLocaleString("zh-TW")}`, status: row.status, at: historicalEventAt(row), href: `/admin/customers/${row.member_id}` });
     }
   }
   if (type === "all" || type === "order") {
     for (const row of data.orders) {
       const member = members.get(row.member_id);
-      results.push({ id: row.id, type: "order", memberId: row.member_id, customerName: member?.name ?? "未知客戶", company: member?.company ?? null, title: `${row.order_no}｜${row.design_name || row.file_name}`, excerpt: [row.product_name, row.material_raw, row.processing_items].filter(Boolean).join(" · "), status: row.status, at: row.updated_at, href: `/admin/orders/${row.id}` });
+      results.push({ id: row.id, type: "order", memberId: row.member_id, customerName: member?.name ?? "未知客戶", company: member?.company ?? null, title: `${row.order_no}｜${row.design_name || row.file_name}`, excerpt: [row.product_name, row.material_raw, row.processing_items].filter(Boolean).join(" · "), status: row.status, at: historicalEventAt(row), href: `/admin/orders/${row.id}` });
     }
   }
   const needle = query.trim().toLocaleLowerCase("zh-TW");

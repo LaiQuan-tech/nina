@@ -25,6 +25,7 @@ export type WorkOrder = {
   file_name: string;
   storage_path: string;
   session_id: string | null;
+  is_demo: boolean;
   parsed: Segments | Record<string, unknown>;
   customer_no: string | null;
   customer_phone: string | null;
@@ -56,6 +57,15 @@ export const EDITABLE_FIELDS = [
 ] as const;
 
 export type EditableField = (typeof EDITABLE_FIELDS)[number];
+
+export function isWorkOrderReadOnly(order: Pick<WorkOrder, "is_demo">): boolean {
+  return order.is_demo;
+}
+
+/** 正式案件的工單讀取一律排除展示資料。 */
+export function productionWorkOrderFilter() {
+  return { column: "is_demo", value: false } as const;
+}
 
 // 商品命中 ERP 主檔的結果（由 lib/productLookup 提供）。
 export type ProductResolution = {
@@ -120,10 +130,12 @@ export async function getWorkOrder(id: string): Promise<WorkOrder | null> {
 export async function getWorkOrdersBySession(sessionId: string): Promise<WorkOrder[]> {
   const db = createAdminSupabase();
   if (!db || !sessionId) return [];
+  const production = productionWorkOrderFilter();
   const { data } = await db
     .from("work_orders")
     .select("*")
     .eq("session_id", sessionId)
+    .eq(production.column, production.value)
     .order("created_at", { ascending: false });
   return (data as WorkOrder[]) ?? [];
 }
@@ -135,6 +147,8 @@ export async function updateWorkOrder(
 ): Promise<WorkOrder | null> {
   const db = createAdminSupabase();
   if (!db) return null;
+  const existing = await getWorkOrder(id);
+  if (!existing || isWorkOrderReadOnly(existing)) return null;
   const clean: Record<string, unknown> = {};
   for (const key of EDITABLE_FIELDS) {
     if (key in patch) {
@@ -143,7 +157,13 @@ export async function updateWorkOrder(
     }
   }
   if (Object.keys(clean).length === 0) return getWorkOrder(id);
-  const { data, error } = await db.from("work_orders").update(clean).eq("id", id).select("*").single();
+  const { data, error } = await db
+    .from("work_orders")
+    .update(clean)
+    .eq("id", id)
+    .eq("is_demo", false)
+    .select("*")
+    .single();
   if (error) return null;
   return data as WorkOrder;
 }

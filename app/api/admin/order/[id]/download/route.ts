@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getWorkOrder } from "@/lib/workOrders";
+import { getWorkOrder, isWorkOrderReadOnly } from "@/lib/workOrders";
 import { signedPrintUrl } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -10,6 +10,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const order = await getWorkOrder(params.id);
   if (!order) {
     return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+  }
+  if (isWorkOrderReadOnly(order)) {
+    return NextResponse.json({ ok: false, error: "demo_read_only" }, { status: 403 });
   }
   if (!order.storage_path) {
     return NextResponse.json({ ok: false, error: "no_file" }, { status: 404 });

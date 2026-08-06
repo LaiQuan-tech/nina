@@ -25,9 +25,33 @@ export type CustomerTimelineEvent = TimelineSourceItem & {
 };
 
 export type FollowupBucketItem = { id: string; dueAt: string; status: string; [key: string]: unknown };
+export type HistoricalEventSource = {
+  created_at: string | null | undefined;
+  updated_at?: string | null | undefined;
+};
 
 function normalized(value: unknown): string {
   return String(value ?? "").trim().toLocaleLowerCase("zh-TW");
+}
+
+/**
+ * Demo 資料重灌會觸發 updated_at 更新，因此歷史事件一律以不可變的 created_at 呈現。
+ */
+export function historicalEventAt(event: HistoricalEventSource): string {
+  return event.created_at ?? "";
+}
+
+export function latestHistoricalEventAt(events: HistoricalEventSource[]): string | null {
+  return events
+    .map(historicalEventAt)
+    .filter((value) => value && !Number.isNaN(new Date(value).getTime()))
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] ?? null;
+}
+
+export function sortCustomersByLastInteraction<T extends { lastInteractionAt: string | null }>(customers: T[]): T[] {
+  return [...customers].sort(
+    (a, b) => new Date(b.lastInteractionAt ?? 0).getTime() - new Date(a.lastInteractionAt ?? 0).getTime(),
+  );
 }
 
 export function matchesCustomerFilters(customer: CustomerFilterSource, filters: CustomerFilters): boolean {
@@ -68,6 +92,15 @@ function taipeiDayStart(value: Date): number {
 function taipeiDateParts(value: Date): { year: number; month: number; day: number } {
   const shifted = new Date(value.getTime() + 8 * 60 * 60 * 1000);
   return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() + 1, day: shifted.getUTCDate() };
+}
+
+/** 取得 Asia/Taipei 的本月一日與今日零時，回傳可直接比較的 UTC epoch。 */
+export function taipeiCalendarBoundaries(value: Date): { monthStart: number; todayStart: number } {
+  const { year, month } = taipeiDateParts(value);
+  return {
+    monthStart: Date.UTC(year, month - 1, 1) - 8 * 60 * 60 * 1000,
+    todayStart: taipeiDayStart(value),
+  };
 }
 
 function taipeiDateKey(value: Date): string {
