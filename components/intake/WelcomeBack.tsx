@@ -27,20 +27,20 @@ export default function WelcomeBack({
 
   return (
     <div>
-      <div className="s-field-label">歡迎回來，已記住您的聯絡資訊</div>
-      <div style={{ border: "2px solid var(--s-ink)", background: "var(--s-surface)", padding: 14, fontSize: 14, lineHeight: 1.9, marginBottom: 14 }}>
-        <div style={{ fontWeight: 800 }}>{contact.name}</div>
-        <div style={{ color: "var(--s-muted)" }}>{contact.email}</div>
-        <div style={{ color: "var(--s-muted)" }}>{contact.phone}</div>
+      <p className="mei-note" style={{ margin: "0 0 12px" }}>
+        歡迎回來，已記住您的聯絡資訊。
+      </p>
+
+      <div className="mei-card-box">
+        <div style={{ fontWeight: 700 }}>{contact.name}</div>
+        <div style={{ color: "var(--mei-text-2)" }}>{contact.email}</div>
+        <div style={{ color: "var(--mei-text-2)" }}>{contact.phone}</div>
       </div>
-      <button onClick={go} disabled={loading} className="s-btn s-btn-primary" style={{ width: "100%" }}>
+
+      <button onClick={go} disabled={loading} className="mei-btn mei-btn-primary" style={{ width: "100%", minHeight: 48 }}>
         {loading ? "處理中…" : "開始上傳印刷檔"}
       </button>
-      <button
-        onClick={onSwitch}
-        className="s-btn"
-        style={{ width: "100%", marginTop: 10, border: "none", minHeight: 36, fontSize: 13.5, color: "var(--s-dim)", textDecoration: "underline" }}
-      >
+      <button onClick={onSwitch} className="mei-link" style={{ width: "100%", marginTop: 6 }}>
         改用其他聯絡方式
       </button>
     </div>

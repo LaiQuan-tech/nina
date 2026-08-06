@@ -108,39 +108,35 @@ export default function ChatUpload({ sessionId, contactName }: { sessionId: stri
 
   return (
     <div
+      className="mei-drop"
+      data-over={dragOver ? "true" : "false"}
       onDragOver={(e) => {
         e.preventDefault();
         setDragOver(true);
       }}
       onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
-      style={{ border: dragOver ? "2px dashed var(--s-red)" : "2px solid transparent", padding: dragOver ? 6 : 0, transition: "border-color .15s" }}
     >
-      <div
-        ref={scrollRef}
-        style={{ maxHeight: 300, overflowY: "auto", marginBottom: 14, paddingRight: 2 }}
-      >
+      <div className="mei-log" ref={scrollRef} aria-live="polite">
         {msgs.map((m, i) => (
-          <div
+          <p
             key={i}
-            className={`s-bub${m.role === "user" ? " me" : ""}`}
-            style={{
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              ...(m.tone === "err"
-                ? { background: "#fff", border: "2px solid var(--s-red)", color: "var(--s-red-deep)" }
-                : m.tone === "ok"
-                  ? { background: "var(--s-ink)", color: "var(--s-bg)" }
-                  : {}),
-            }}
+            className={`mei-bub ${
+              m.role === "user" ? "mei-bub-me" : m.tone === "err" ? "mei-bub-err" : "mei-bub-ai"
+            }`}
+            style={{ margin: 0, ...(m.tone === "ok" ? { background: "var(--mei-ink)", color: "var(--mei-paper)" } : {}) }}
           >
             {m.text}
-          </div>
+          </p>
         ))}
         {busy && (
-          <div className="s-bub" style={{ color: "var(--s-dim)" }}>
-            處理中…
-          </div>
+          <p className="mei-bub mei-bub-ai" style={{ margin: 0, color: "var(--mei-text-3)" }}>
+            <span className="mei-typing" aria-label="處理中">
+              <i />
+              <i />
+              <i />
+            </span>
+          </p>
         )}
       </div>
 
@@ -152,12 +148,17 @@ export default function ChatUpload({ sessionId, contactName }: { sessionId: stri
         accept=".ai,.pdf,.eps,.psd,.tif,.tiff,.jpg,.jpeg,.png"
         onChange={(e) => void handleFiles(e.target.files)}
       />
-      <button onClick={() => fileRef.current?.click()} disabled={busy} className="s-btn s-btn-primary" style={{ width: "100%" }}>
-        📎 選擇印刷檔上傳（可多選，或拖曳到這裡）
+      <button
+        onClick={() => fileRef.current?.click()}
+        disabled={busy}
+        className="mei-btn mei-btn-primary"
+        style={{ width: "100%", minHeight: 48 }}
+      >
+        選擇印刷檔上傳（可多選，或拖曳到這裡）
       </button>
-      <div className="s-mono" style={{ fontSize: 10, color: "var(--s-faint)", marginTop: 9, lineHeight: 1.6, wordBreak: "break-all" }}>
+      <p className="mei-mono-s" style={{ marginTop: 9 }}>
         正確檔名範例：{EXAMPLE}
-      </div>
+      </p>
     </div>
   );
 }

@@ -8,7 +8,6 @@ export type Contact = { name: string; email: string; phone: string };
 // 收稿前的聯絡資訊表單：姓名/Email/手機（三欄必填）。
 // 送出 → 產 sessionId + POST /api/session 建案件 → onReady(sessionId, contact)。
 // 勾「記住」→ 存 localStorage，下次直接跳「歡迎回來」免再填。
-// 樣式沿用官網設計語言（零圓角、2px 框線）。
 export default function ContactGate({
   onReady,
   initial,
@@ -65,47 +64,44 @@ export default function ContactGate({
 
   return (
     <form onSubmit={submit}>
-      <div className="s-field-label">先留個聯絡方式，方便後續聯繫與追蹤稿件</div>
+      <p className="mei-note" style={{ margin: "0 0 14px" }}>
+        先留個聯絡方式，方便後續聯繫與追蹤稿件。
+      </p>
+
       {(
         [
-          { k: "name", label: "姓名", type: "text", ph: "您的姓名" },
-          { k: "email", label: "EMAIL", type: "email", ph: "you@example.com" },
-          { k: "phone", label: "手機", type: "tel", ph: "0912345678" },
+          { k: "name", label: "姓名", type: "text", ph: "您的姓名", ac: "name" },
+          { k: "email", label: "EMAIL", type: "email", ph: "you@example.com", ac: "email" },
+          { k: "phone", label: "手機", type: "tel", ph: "0912345678", ac: "tel" },
         ] as const
       ).map((f) => (
-        <label key={f.k} style={{ display: "block", marginBottom: 12 }}>
-          <div className="lb s-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "var(--s-dim)", marginBottom: 6 }}>
-            {f.label}
-          </div>
+        <label key={f.k} className="mei-field" htmlFor={`ct-${f.k}`}>
+          <span className="mei-flabel">{f.label}</span>
           <input
+            id={`ct-${f.k}`}
+            className="mei-input"
             type={f.type}
+            autoComplete={f.ac}
             value={form[f.k]}
             onChange={(e) => set(f.k, e.target.value)}
             placeholder={f.ph}
-            style={{
-              width: "100%",
-              border: "2px solid var(--s-ink)",
-              background: "var(--s-bg)",
-              color: "var(--s-ink)",
-              padding: "11px 13px",
-              minHeight: 44,
-              fontSize: 15,
-              outline: "none",
-            }}
+            required
           />
         </label>
       ))}
 
-      <label style={{ display: "flex", alignItems: "center", gap: 9, margin: "4px 0 14px", cursor: "pointer", userSelect: "none" }}>
-        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} style={{ width: 16, height: 16, cursor: "pointer" }} />
-        <span style={{ fontSize: 13.5 }}>記住我的聯絡資訊（下次免再填）</span>
+      <label className="mei-check">
+        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+        <span>記住我的聯絡資訊（下次免再填）</span>
       </label>
 
       {error && (
-        <div style={{ fontSize: 13.5, color: "#fff", background: "var(--s-red)", padding: "9px 13px", marginBottom: 12 }}>{error}</div>
+        <p className="mei-alert" role="alert" style={{ margin: "10px 0 12px" }}>
+          {error}
+        </p>
       )}
 
-      <button type="submit" disabled={loading} className="s-btn s-btn-primary" style={{ width: "100%" }}>
+      <button type="submit" disabled={loading} className="mei-btn mei-btn-primary" style={{ width: "100%", minHeight: 48 }}>
         {loading ? "處理中…" : "開始上傳印刷檔"}
       </button>
     </form>

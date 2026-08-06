@@ -67,20 +67,32 @@ export default function IntakeFlow() {
   }
 
   if (step.name === "form") {
-    return <ContactGate initial={step.initial} onReady={(id, contact) => setStep({ name: "upload", sessionId: id, contact })} />;
+    return (
+      <ContactGate
+        initial={step.initial}
+        onReady={(id, contact) => setStep({ name: "upload", sessionId: id, contact })}
+      />
+    );
   }
 
   // upload
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12, fontSize: 12.5, color: "var(--s-dim)" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          marginBottom: 8,
+          fontSize: 13,
+          color: "var(--mei-text-3)",
+        }}
+      >
         <span>
-          目前以 <strong style={{ color: "var(--s-ink)" }}>{step.contact.name}</strong> 收稿
+          目前以 <strong style={{ color: "var(--mei-ink)" }}>{step.contact.name}</strong> 收稿
         </span>
-        <button
-          onClick={() => switchContact(step.contact)}
-          style={{ border: "none", background: "transparent", color: "var(--s-red-deep)", fontSize: 12.5, cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}
-        >
+        <button onClick={() => switchContact(step.contact)} className="mei-link">
           換一個聯絡人
         </button>
       </div>
