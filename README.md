@@ -1,82 +1,131 @@
-# Nina — 美強光廣告科技官網 · 印刷檔線上收稿 · 自動建工單
+# Nina — 美強光廣告科技 官網 · AI 收稿 · 自動工單 · 客戶知識後台
 
-**官網**（`/`）：依 `design_handoff_mei5899_web`（Direction B）建置。Header／Hero／服務項目三軸橫向捲動列／深色作品牆／頁尾 ＋ 右下角 AI 詢價浮動視窗。**價格不公開**，一律走 AI 對話詢價。
+Next.js 14 App Router + Supabase + Gemini。
 
-**收稿**（`/upload`）：填聯絡資訊（姓名/Email/手機）→ 上傳印刷檔 → 系統檢查檔名格式 → 格式錯 AI 引導改名（**不收檔**）→ 格式正確才收檔（存 Supabase Storage）。客戶只看到「送件成功／失敗」，**看不到工單**。可一次上傳多個檔。
+> ## ⚠️ 先讀這段：哪些是正式功能，哪些是 Demo 雛形
+>
+> 這個 repo 有兩塊性質完全不同的東西，**對外說明或做簡報時不要混為一談**：
+>
+> | 區塊 | 狀態 | 資料 |
+> |---|---|---|
+> | 官網、會員、AI 收稿、檔名驗證、自動工單、ERP 主檔比對 | **正式功能** | 真實資料 |
+> | 客戶知識庫、報價、追蹤回訪、後台 AI 小幫手 | **Demo 雛形** | **全虛構**，`is_demo=true` 隔離 |
+>
+> Demo 那塊的設計目的寫在 [`docs/plans/2026-08-06-demo-customer-knowledge-admin-design.md`](docs/plans/2026-08-06-demo-customer-knowledge-admin-design.md)：
+> 「先建立可操作的 Demo 雛形，以全虛構資料展示未來正式 CRM 的使用方式」，
+> 並明確排除「真正的 AI 摘要生成、外部通知或 **ERP 寫入**」。
+>
+> **ERP 是唯讀比對，不是接管。** 主檔匯進 Supabase 供 `match_product` 查詢商品名稱，
+> 系統不回寫任何資料到 ERP。
 
-**管理後台**（`/admin`，多帳號密碼登入）：看每個收稿案件的聯絡資訊、完整對話紀錄、收件狀態，以及收件成功後自動建立的工單（可列印）。工單為內部文件，僅後台可見。
+## 正式功能
 
-## 官網（前台）
+### 官網（前台）
+路由群組 `app/(site)/`：`/`、`/about`、`/downloads`、`/upload`、`/login`、`/register`、`/member`。
+**價格不公開**，一律走右下角 AI 詢價浮動視窗。設計依 `design_handoff_mei5899_web`（Direction B）。
 
-- 路由群組 `app/(site)/`：`layout.tsx` 內含 SiteHeader / SiteFooter / ChatWidget；頁面有 `/`、`/about`、`/downloads`、`/upload`。
-- 元件在 `components/mei/`，內容常數在 `lib/site/content.ts`（服務 8 項、作品 4 件、聯絡資訊、導覽）。
-- 樣式：`app/globals.css` 第 337 行之後的 `.mei` 區塊。設計 token 一律 `--mei-*`，**全部限縮在 `.mei` scope 之下**，與後台 `.adm-*`、工單 `.wo-*` 互不影響；**不使用 `!important`**。
-  - 米白 `#f7f5f2`／墨黑 `#181513`／唯一強調色洋紅 `#e6007e`；Noto Serif TC（標題）+ Noto Sans TC + JetBrains Mono。
-  - RWD 手機優先，斷點 `<640` 手機（漢堡右滑抽屜）／`640–1024` 平板（nav 只露 3 項）／`>1024` 桌機（nav 5 項，內容 max-width 1280）。
-  - ⚠️ 區塊樣式**不要用 `padding` 簡寫**，會把 `.mei-pad` 的左右內距洗掉；只寫 `padding-top` / `padding-bottom`。
-- 圖片位走 `components/mei/Slot.tsx`：有圖顯示圖，沒圖 fallback 成條紋佔位＋mono 標籤。目前共 14 個圖位（桌機／手機 Hero 2＋服務 8＋作品 4），由 `site_images` 讀取。
-- 初始寫實示意圖存於 `public/generated/site/`；執行 `npm run seed:site-images` 可冪等上傳至 `site-media` 並建立／更新 14 筆圖片資料。
-- 管理員可在 `/admin/site-images` 預覽、上傳及替換 JPG／PNG／WebP 圖片；單檔上限 4 MB。更新後首頁快取會立即失效。
-- Logo：`public/logo-mei.png`（去背 500×500 PNG）。原始檔在 `design_handoff_mei5899_web/assets/logo-source.jpg`（2048×2048，**不要直接開，先 `sips -Z 1024` 產縮圖**）。
+樣式在 `app/globals.css` 的 `.mei` 區塊，token 一律 `--mei-*` 並**全部限縮在 `.mei` scope 下**，
+與後台 `.adm-*`、工單 `.wo-*` 互不影響；**不使用 `!important`**。
+⚠️ 區塊樣式**不要用 `padding` 簡寫**，會把 `.mei-pad` 的左右內距洗掉，只寫 `padding-top` / `padding-bottom`。
 
-## 客戶／後台流程
+圖片位走 `components/mei/Slot.tsx`（無圖時 fallback 成條紋佔位）。共 14 個圖位，由 `site_images` 讀取，
+管理員可在 `/admin/site-images` 上傳替換（JPG/PNG/WebP，單檔 4 MB）。
+`npm run seed:site-images` 冪等上架 `public/generated/site/` 的初始圖。
 
-- 收稿頁：`app/(site)/upload/page.tsx` → `components/intake/IntakeFlow.tsx`（ContactGate 聯絡表單 → ChatUpload 上傳）。案件與對話存 `intake_sessions`。
-- 收檔：`app/api/upload/route.ts` 伺服器端再驗檔名 → 存 storage → 建工單（關聯 `session_id`）→ 更新案件狀態；回客戶**只有** `{ok, fileName}`。
-- 後台：`/admin`（總覽）、`/admin/cases`（案件列表）、`/admin/cases/[id]`（聯絡卡＋對話＋工單清單）、`/admin/orders/[id]`（可列印工單）、`/admin/users`（管理員帳號）。
-- 認證：`lib/adminAuth.ts`（HMAC 簽章 cookie，Edge-safe）+ `lib/adminPassword.ts`（pbkdf2，Node）+ `middleware.ts` 閘門。多帳號在 `admin_users` 表；`node scripts/createAdmin.mjs <email> <password> [name]` 建帳號。
+### 會員（客戶帳號）
+**登入帳號是手機號碼，不是 Email** —— 本專案沒有任何寄信管道，見 `supabase/member_schema.sql` 開頭說明。
+`api/member/*`：register / login / session / set-password / quick-start。
 
-## 檔名命名規則
+### AI 收稿與檔名驗證
+`/upload` → `components/intake/IntakeFlow.tsx`（ContactGate 聯絡表單 → ChatUpload 上傳）。
+填聯絡資訊 → 上傳 → 檢查檔名 → **格式錯不收檔**、AI 引導改名 → 格式正確才存進 Supabase Storage。
+客戶只看到「送件成功／失敗」，**看不到工單**。案件與對話存 `intake_sessions`。
 
-正確範例：
-```
-069871_{(月匯)百陽廣告}_(78)20260625WG星雲AI地板90x100cmpvc+霧-1CCPVC720N10M.ai
-```
-
-用底線 `_` 分三段：
-1. `069871` — 6 碼流水號
-2. `{(月匯)百陽廣告}` — `{(付款別)客戶名稱}`
-3. `(78)20260625WG星雲AI地板90x100cmpvc+霧-1CCPVC720N10M` — 內容尾段（無分隔，靠有序 regex 逐段消耗）：
-   類別`(78)` · 日期`20260625` · 案主`WG` · 案名`星雲AI地板` · 尺寸`90x100cm` · 材質`pvc+霧` · 數量`-1` · **商品編號`CCPVC720N10M`**
-
-**驗證是 deterministic**：`lib/filename/parser.ts` 是唯一真相，AI（Gemini）只把錯誤潤飾成親切引導。upload API **伺服器端會再驗一次**，永不信任前端。
+**驗證是 deterministic**：`lib/filename/parser.ts` 是唯一真相，Gemini 只把錯誤潤飾成親切引導。
+`app/api/upload/route.ts` **伺服器端會再驗一次，永不信任前端**。
 要改命名規則只需改 `lib/filename/segments.ts` 這張設定表。
 
-## 商品名稱來自 ERP 主檔
+正確檔名範例：
+```
+069871_{(月匯)百陽廣告}_(78)20260625WG星雲AI地板90x100cmpvc+霧-1CCPVC720N10M
+```
+底線分三段：6 碼流水號 ／ `{(付款別)客戶名稱}` ／ 內容尾段（類別·日期·案主·案名·尺寸·材質·數量·**商品編號**，靠有序 regex 逐段消耗）。
 
-工單「商品名稱」由檔名末段的**商品編號**查 `erp_product_master`（來源：城盛ERP規劃.xlsx，699 商品）帶出：
-`CCPVC720N10M` →（最長前綴相符）→ `CCPVC720N` → **高遮PVC+霧**。
-查不到 → 仍收檔，但工單標「⚠ 非標準商品，請人工確認」（soft）。比對邏輯在 DB function `match_product()`。
+### 自動工單與 ERP 主檔比對
+收檔成功 → 建工單（`work_orders`，單號由 `gen_work_order_no` 產生）→ 可在 `/admin/orders/[id]` 列印。
+工單「商品名稱」由檔名末段的商品編號查 ERP 主檔帶出，走 `match_product` RPC（先完全相符，否則**最長前綴相符**）：
+`CCPVC720N10M` → `CCPVC720N` → **高遮PVC+霧**。
+查不到 → 仍收檔，工單標「⚠ 非標準商品，請人工確認」（soft fail）。
+
+ERP 參照資料共 **1,039 筆**（來源：城盛ERP規劃.xlsx），以 `node scripts/importErp.mjs` 冪等匯入：
+
+| 資料表 | 筆數 |
+|---|---|
+| `erp_product_master` 商品主檔 | 699 |
+| `erp_sub_products` 子產品 | 161 |
+| `erp_processing_items` 加工項目 | 149 |
+| `erp_main_products` 主產品 | 30 |
+
+### 管理後台
+`/admin`（總覽）、`/admin/cases`、`/admin/cases/[id]`（聯絡卡＋對話＋工單）、`/admin/orders/[id]`（可列印工單）、
+`/admin/site-images`、`/admin/users`。
+
+認證：`lib/adminAuth.ts`（HMAC 簽章 cookie，Edge-safe）+ `lib/adminPassword.ts`（pbkdf2，Node）+ `middleware.ts` 閘門。
+多帳號存 `admin_users`；`node scripts/createAdmin.mjs <email> <password> [name]` 建帳號。
+
+## Demo 雛形（全虛構資料）
+
+**這一塊是給簡報與教育訓練看的，不是正式營運資料。**
+
+- `/admin/customers`、`/admin/customers/[id]` — 客戶知識庫（`customer_profiles`：產業、分級、標籤、偏好材質／商品／加工）
+- `/admin/knowledge` — 服務知識庫
+- `/admin/followups` — 追蹤與回訪（`customer_followups`）
+- 報價（`quotes`）
+- **後台 AI 小幫手**（右下角，`lib/admin/adminAssistant.ts`）——自然語言查總覽／客戶／回訪／報價／工單／材料用量
+
+AI 小幫手的安全邊界（見 `docs/plans/2026-08-06-admin-ai-assistant-design.md`）：
+**只讀 `is_demo=true` 的資料**、不接受 SQL、不執行任意查詢、不修改任何資料；
+報表先由白名單查詢器產生再交給 Gemini 潤飾，Gemini 失敗時仍回固定格式報表。
+
+Demo 資料管理：
+```bash
+npm run seed:demo-crm     # 建立 10 位虛構客戶（固定 UUID，冪等）
+npm run clean:demo-crm    # 只刪 is_demo=true，依相依順序逆序移除
+```
+⚠️ 虛構資料用明顯的測試電話與 `example.com` Email，公司與人名皆為虛構。
+前台會員登入、快速入會與紀錄頁**都排除 `is_demo=true`**。
 
 ## 技術
 
 - Next.js 14 App Router + `@supabase/supabase-js`
-- Gemini `gemini-3.5-flash`（原生 REST，無 SDK；僅用於潤飾引導文字，未設 key 時用內建純文字 fallback）
-- Supabase：`work_orders`（工單，RLS 開、service_role 專用）+ `print-files` 私有 bucket + ERP 參照表（`erp_product_master` / `erp_processing_items` / `erp_main_products` / `erp_sub_products`）
+- Gemini（原生 REST，無 SDK）——僅用於**潤飾**引導文字與報表，未設 key 時退化為內建純文字，流程不中斷
+- Supabase：12 張表 + `print-files` 私有 bucket，RLS 開、service_role 專用
 
 ## 開發
 
 ```bash
 npm install
-cp .env.example .env.local   # 填 Supabase + Gemini
-npm run test:parser          # 檔名 parser 單元測試
+cp .env.example .env.local   # 填 Supabase + Gemini + 兩組 session secret
+npm run test                 # 全部單元測試（10 個測試檔）
+npm run test:parser          # 只跑檔名 parser
 npm run dev
 ```
 
-## 資料庫 / 主檔匯入
+## 資料庫
+
+在 Supabase 依序執行：`supabase/schema.sql` → `erp_schema.sql` → `site_schema.sql` →
+`member_schema.sql` → `admin_schema.sql` → `customer_knowledge_schema.sql` → `migrations/*.sql`。
 
 ```bash
-# 建表：在 Supabase 執行 supabase/schema.sql 與 supabase/erp_schema.sql
-node scripts/importErp.mjs    # 把 supabase/erp_data/*.json 匯入參照表（冪等）
-npm run seed:site-images      # 上架 public/generated/site 的 14 張官網站圖（冪等）
+node scripts/importErp.mjs    # 匯入 ERP 參照表（冪等）
+npm run seed:site-images      # 上架官網 14 張圖（冪等）
 ```
 
 ## 環境變數
 
 | 變數 | 用途 |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 專案 URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | service_role（僅 server，勿加 `NEXT_PUBLIC_`） |
-| `GEMINI_API_KEY` | Gemini（選配，僅潤飾引導文字） |
-| `ADMIN_SESSION_SECRET` | 後台 HMAC 簽 cookie 密鑰（`openssl rand -hex 32`） |
+| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase 前端 |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role，**僅 server**，勿加 `NEXT_PUBLIC_` |
+| `GEMINI_API_KEY` | 選配，僅潤飾文字 |
+| `ADMIN_SESSION_SECRET` / `MEMBER_SESSION_SECRET` | 後台與會員 session 簽章（`openssl rand -hex 32`） |
