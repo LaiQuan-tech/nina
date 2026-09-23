@@ -139,6 +139,9 @@ export default function ScanStation({
   function toggleManualMode() {
     setManualMode((m) => {
       const next = !m;
+      // 立刻同步 ref（不等 useEffect 排到下一輪 render）：refocus() 讀的是 ref，
+      // 切換當下就可能有 interval tick／blur 事件觸發 refocus，用舊值會搶錯焦點。
+      manualModeRef.current = next;
       if (!next) {
         // 切回掃描槍模式：不等 1 秒的 interval tick，立刻搶回 focus
         requestAnimationFrame(() => inputRef.current?.focus());
@@ -214,8 +217,9 @@ export default function ScanStation({
           const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
           if (res.ok && data.ok) {
             const isDup = Boolean(data.duplicate);
-            if (isDup) feedbackFailure();
-            else feedbackSuccess();
+            // 重複掃描一樣是「有效記錄成功」（後端照插入事件，只是標記 duplicate），不是失敗
+            // ——用失敗音效會讓操作員誤以為沒掃到而重掃，duplicate 用列表的琥珀色+文字提示就夠。
+            feedbackSuccess();
             const order = (data.order ?? {}) as { order_no?: string; customer_name?: string | null };
             setRows((rs) =>
               rs.map((r) =>
@@ -256,7 +260,9 @@ export default function ScanStation({
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     idleTimerRef.current = setTimeout(() => {
       idleTimerRef.current = null;
-      if (v.trim().length >= MIN_IDLE_BUFFER_LEN) submitRaw(v, defaultStation);
+      // 手動模式是人在逐字打字，打到一半的自然停頓（例如打完前 8 碼、正要按 "-"）
+      // 不該被當成「掃描槍打完了」自動送出——這條 120ms 閒置規則只服務掃描槍。
+      if (!manualModeRef.current && v.trim().length >= MIN_IDLE_BUFFER_LEN) submitRaw(v, defaultStation);
     }, IDLE_SUBMIT_MS);
   }
 

@@ -93,11 +93,17 @@ export async function recordScan(input: {
   const db = createAdminSupabase();
   if (!db) return { ok: false, error: "scan_failed" };
 
-  const { data: existing } = await db
+  const { data: existing, error: lookupError } = await db
     .from("work_orders")
     .select("id, order_no, customer_name, product_name, is_demo")
     .eq("order_no", parsed.orderNo)
     .maybeSingle();
+  if (lookupError) {
+    // 真的查詢失敗（DB 暫時異常）不該跟「查無此單」混為一談——後者是操作者該去核對
+    // 紙本單號，前者是系統問題該重試，兩者給錯誤碼不一樣，現場螢幕顯示的訊息也不同。
+    console.error("[workOrderScans] recordScan lookup work_orders failed:", lookupError.message);
+    return { ok: false, error: "scan_failed" };
+  }
 
   const eligibility = evaluateOrderForScan(existing as ScanTargetOrder | null);
   if (!eligibility.ok) return { ok: false, error: eligibility.error };
@@ -125,21 +131,37 @@ export async function recordScan(input: {
     return { ok: false, error: "scan_failed" };
   }
 
-  const { data: allEvents } = await db
+  const { data: allEvents, error: eventsError } = await db
     .from("work_order_events")
     .select("station, scanned_at")
     .eq("work_order_id", order.id);
-  const progress = deriveOrderProgress((allEvents as { station: StationKey; scanned_at: string }[] | null) ?? []);
 
-  const { error: updateError } = await db
-    .from("work_orders")
-    .update({ station: progress.station, status: progress.status })
-    .eq("id", order.id)
-    .eq("is_demo", false);
-  if (updateError) {
-    // 事件已經記到了（稽核紀錄不遺失），只是快取欄位這次沒跟上——下一次掃描/後台手動存檔
-    // 都會用全部事件重算一次，不是永久性的資料錯誤，記 log 但不擋現場繼續掃。
-    console.error("[workOrderScans] recordScan update work_orders cache failed:", updateError.message);
+  let progress: { station: StationKey | null; status: "open" | "in_progress" | "done" };
+  if (eventsError || !allEvents) {
+    // 上面那筆事件已經 insert 成功（稽核紀錄不會遺失），只是這次「重查全部事件」失敗——
+    // 寧可讓 work_orders 快取欄位暫時停在舊值（下次掃描/後台存檔會用完整事件重新算過），
+    // 也絕不能拿一份因查詢出錯而缺漏的事件列表去算 deriveOrderProgress：那樣算出來的
+    // 會是「幾乎沒有事件」的假象，寫回 work_orders 就等於把一張早就在後段站別的工單
+    // 靜默改回「尚未進站／已收件」，而且不會有任何錯誤訊息浮現給現場或後台看到。
+    // 這裡改成用剛剛這一筆事件保守估算 progress 只回應這次掃描的操作者參考用，
+    // 不觸碰 work_orders，也不會比實際進度更「倒退」。
+    console.error(
+      "[workOrderScans] recordScan re-query events failed, skip work_orders cache update:",
+      eventsError?.message ?? "no rows returned"
+    );
+    progress = deriveOrderProgress([{ station: parsed.station, scanned_at: new Date().toISOString() }]);
+  } else {
+    progress = deriveOrderProgress(allEvents as { station: StationKey; scanned_at: string }[]);
+    const { error: updateError } = await db
+      .from("work_orders")
+      .update({ station: progress.station, status: progress.status })
+      .eq("id", order.id)
+      .eq("is_demo", false);
+    if (updateError) {
+      // 事件已經記到了（稽核紀錄不遺失），只是快取欄位這次沒跟上——下一次掃描/後台手動存檔
+      // 都會用全部事件重算一次，不是永久性的資料錯誤，記 log 但不擋現場繼續掃。
+      console.error("[workOrderScans] recordScan update work_orders cache failed:", updateError.message);
+    }
   }
 
   return {
