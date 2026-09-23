@@ -103,14 +103,24 @@ function asThumbnailMeta(value: unknown): ThumbnailMeta {
   return value && typeof value === "object" ? (value as ThumbnailMeta) : {};
 }
 
+/**
+ * 落 DB 狀態，刻意自己吞掉所有錯誤（包含 update 本身失敗）：
+ * 這支會被 ensureThumbnail 的 catch 區塊呼叫，若這裡再拋錯就沒有更外層能接了，
+ * 而縮圖狀態寫不進去絕對不該讓工單詳情頁跟著壞掉——退而求其次回傳「本地合併版」即可。
+ */
 async function persist(
   db: SupabaseClient,
   order: WorkOrder,
   patch: Partial<Pick<WorkOrder, "thumbnail_path" | "thumbnail_status" | "thumbnail_meta">>
 ): Promise<WorkOrder> {
-  const { data, error } = await db.from("work_orders").update(patch).eq("id", order.id).select("*").single();
-  if (error || !data) return { ...order, ...patch };
-  return data as WorkOrder;
+  try {
+    const { data, error } = await db.from("work_orders").update(patch).eq("id", order.id).select("*").single();
+    if (error || !data) return { ...order, ...patch };
+    return data as WorkOrder;
+  } catch (err) {
+    console.error("[thumbnail] persist failed:", err);
+    return { ...order, ...patch };
+  }
 }
 
 /**
