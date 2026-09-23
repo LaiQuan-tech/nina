@@ -114,7 +114,7 @@ npm run dev
 ## 資料庫
 
 在 Supabase 依序執行：`supabase/schema.sql` → `erp_schema.sql` → `site_schema.sql` →
-`member_schema.sql` → `admin_schema.sql` → `customer_knowledge_schema.sql` → `migrations/*.sql`。
+`member_schema.sql` → `admin_schema.sql` → `customer_knowledge_schema.sql` → `migrations/*.sql` → `work_order_v2_schema.sql`（工單改版 v2：明細/掃描事件/ERP 補值 RPC，冪等）。
 
 ```bash
 node scripts/importErp.mjs    # 匯入 ERP 參照表（冪等）
