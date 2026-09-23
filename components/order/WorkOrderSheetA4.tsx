@@ -4,6 +4,7 @@ import { getWorkOrderItems } from "@/lib/workOrders";
 import { signedPrintUrl } from "@/lib/storage";
 import { STATION_LABELS } from "@/lib/workOrder/barcode";
 import { rocFromYmd, rocFromIso } from "./WorkOrderSheet";
+import StationBarcode from "./StationBarcode";
 
 // ── 儲存格語法：對照客戶實體 A4 工單（9 欄 A-I × 45 列），可逐格對 xlsx diff。──
 // CSS 對應的具名 grid line 見 globals.css `.wo-a4 .wo-grid`：cA..cI + 結尾 cEnd。
@@ -89,11 +90,6 @@ function LongText({ text, threshold = 22 }: { text: string; threshold?: number }
     wordBreak: "break-all",
   };
   return <span style={style}>{text}</span>;
-}
-
-function BarcodePlaceholder({ label }: { label: string }) {
-  // Phase 3 會替換成 components/order/StationBarcode.tsx 產的真條碼；這輪先佔位＋留框位尺寸。
-  return <div className="wo-a4-bc-placeholder">{label}條碼</div>;
 }
 
 function displaySingleQty(order: WorkOrder): string {
@@ -265,8 +261,8 @@ export default async function WorkOrderSheetA4({ order }: { order: WorkOrder }) 
           <Box at="G12:I12" label r>
             {STATION_LABELS.output}
           </Box>
-          <Box at="G13:I15" r className="wo-bc">
-            <BarcodePlaceholder label={STATION_LABELS.output} />
+          <Box at="G13:I15" r className="wo-bc wo-bc--sm">
+            <StationBarcode orderNo={order.order_no ?? ""} station="output" />
           </Box>
 
           {/* R14-15：尺寸／數量／備註 */}
@@ -299,7 +295,7 @@ export default async function WorkOrderSheetA4({ order }: { order: WorkOrder }) 
           </Box>
           <ItemRows items={processingItems} startRow={18} />
           <Box at="G18:I22" r className="wo-bc">
-            <BarcodePlaceholder label={STATION_LABELS.process} />
+            <StationBarcode orderNo={order.order_no ?? ""} station="process" />
           </Box>
 
           {/* R24-29：配件 ＋ 配件條碼 */}
@@ -314,7 +310,7 @@ export default async function WorkOrderSheetA4({ order }: { order: WorkOrder }) 
           </Box>
           <ItemRows items={accessoryItems} startRow={25} />
           <Box at="G25:I29" r className="wo-bc">
-            <BarcodePlaceholder label={STATION_LABELS.accessory} />
+            <StationBarcode orderNo={order.order_no ?? ""} station="accessory" />
           </Box>
 
           {/* R31-45：縮圖／加工示意小圖／包裝完成條碼／送貨簽收條碼 */}
@@ -344,14 +340,14 @@ export default async function WorkOrderSheetA4({ order }: { order: WorkOrder }) 
             )}
           </Box>
           <Box at="G32:I36" r className="wo-bc">
-            <BarcodePlaceholder label={STATION_LABELS.packed} />
+            <StationBarcode orderNo={order.order_no ?? ""} station="packed" />
           </Box>
           <Box at="G37:I39" r />
           <Box at="G40:I40" label r>
             {STATION_LABELS.delivered}
           </Box>
           <Box at="G41:I45" r b className="wo-bc">
-            <BarcodePlaceholder label={STATION_LABELS.delivered} />
+            <StationBarcode orderNo={order.order_no ?? ""} station="delivered" />
           </Box>
         </div>
       </div>

@@ -290,6 +290,42 @@ export async function getWorkOrderEvents(workOrderId: string, limit = 50): Promi
   return (data as WorkOrderEvent[]) ?? [];
 }
 
+// 掃描站首載用：跨所有工單的最近掃描事件（新到舊），embed join 帶出 order_no/customer_name
+// 方便現場畫面直接顯示，不用再逐筆查一次 work_orders。
+export type RecentScanRow = {
+  order_no: string | null;
+  station: StationKey;
+  scanned_at: string;
+  admin_name: string | null;
+  customer_name: string | null;
+};
+
+/** 最近 N 筆掃描事件（跨全部工單，新到舊），供 /admin/scan 首載用。limit 預設 20。 */
+export async function listRecentScans(limit = 20): Promise<RecentScanRow[]> {
+  const db = createAdminSupabase();
+  if (!db) return [];
+  // embed join 型別同樣受限於專案未產生 Database 型別（見上方 buildWorkOrderQuery 的說明），
+  // 這裡一樣用 any + 執行期防呆（work_orders 可能被 PostgREST 回成物件或陣列，視版本而定）。
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (db as any)
+    .from("work_order_events")
+    .select("station, scanned_at, admin_name, work_orders(order_no, customer_name)")
+    .order("scanned_at", { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data as any[]).map((row) => {
+    const order = Array.isArray(row.work_orders) ? row.work_orders[0] : row.work_orders;
+    return {
+      order_no: order?.order_no ?? null,
+      station: row.station as StationKey,
+      scanned_at: row.scanned_at,
+      admin_name: row.admin_name ?? null,
+      customer_name: order?.customer_name ?? null,
+    };
+  });
+}
+
 export async function getWorkOrder(id: string): Promise<WorkOrder | null> {
   const db = createAdminSupabase();
   if (!db) return null;

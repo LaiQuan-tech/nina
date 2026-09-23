@@ -1629,3 +1629,42 @@ a.adm-row:hover {
 .adm-editor-grid label.adm-suggest{position:relative;}
 .adm-editor-grid .adm-suggest-hint{margin-top:4px;color:#0369a1;font-size:11px;}
 .adm-editor-grid .adm-suggest-hint button{margin-left:6px;border:0;background:none;color:#0369a1;font:inherit;font-size:11px;font-weight:700;text-decoration:underline;cursor:pointer;padding:0;}
+
+/* ══ Phase 3：現場掃描站（/admin/scan，故意不用 AdminShell，見該頁註解） ══ */
+.scan-page{min-height:100vh;min-height:100dvh;background:var(--bg);display:flex;flex-direction:column;}
+.scan-header{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#0f172a;color:#fff;position:sticky;top:0;z-index:5;}
+.scan-header .scan-back{color:#fff;text-decoration:none;font-size:13px;font-weight:600;flex:0 0 auto;}
+.scan-header .scan-whoami{flex:1 1 auto;text-align:center;font-size:12.5px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.scan-header .scan-logout-btn{flex:0 0 auto;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:8px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;}
+
+.scan-body{flex:1;max-width:640px;width:100%;margin:0 auto;padding:16px 14px 60px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box;}
+
+.scan-station-picker{display:flex;flex-wrap:wrap;gap:8px;}
+.scan-station-pill{flex:1 1 auto;min-width:88px;min-height:46px;border:1.5px solid #cbd5e1;background:#fff;color:#334155;border-radius:12px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;}
+.scan-station-pill.is-active{border-color:#0369a1;background:#0369a1;color:#fff;}
+.scan-current-station{margin:0;color:#64748b;font-size:12px;text-align:center;}
+.scan-current-station strong{color:#0f172a;}
+
+.scan-input-row{display:flex;gap:8px;}
+.scan-input{flex:1 1 auto;min-width:0;min-height:56px;border:2px solid #0369a1;border-radius:12px;padding:0 14px;font-size:17px;font-weight:700;letter-spacing:1px;color:#0f172a;background:#fff;}
+.scan-input:focus{outline:3px solid rgba(3,105,161,.25);}
+.scan-manual-toggle{flex:0 0 auto;min-height:56px;padding:0 14px;border:1.5px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+.scan-feed{display:grid;gap:8px;}
+.scan-feed-empty{padding:30px 16px;text-align:center;color:#94a3b8;font-size:13px;border:1px dashed #cbd5e1;border-radius:12px;}
+.scan-row{display:grid;grid-template-columns:60px 1fr;gap:4px 10px;padding:10px 12px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;font-size:13px;}
+.scan-row-time{grid-row:1 / 3;align-self:center;color:#94a3b8;font-size:11px;font-family:ui-monospace,Menlo,monospace;}
+.scan-row-main{font-weight:700;color:#0f172a;word-break:break-all;}
+.scan-row-note{color:#64748b;font-size:12px;}
+.scan-row--pending{opacity:.65;}
+.scan-row--ok{border-color:#bbf7d0;background:#f0fdf4;}
+.scan-row--ok .scan-row-note{color:#15803d;font-weight:600;}
+.scan-row--dup{border-color:#fde68a;background:#fffbeb;}
+.scan-row--dup .scan-row-note{color:#b45309;font-weight:600;}
+.scan-row--err{border-color:#fecaca;background:#fef2f2;}
+.scan-row--err .scan-row-main,.scan-row--err .scan-row-note{color:#b91c1c;}
+.scan-row--err .scan-row-note{font-weight:600;}
+
+@media (min-width:480px){
+  .scan-station-pill{flex:0 1 auto;min-width:96px;}
+}

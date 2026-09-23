@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
-import { getWorkOrder, getWorkOrderItems, getShippingDefaults, isWorkOrderReadOnly } from "@/lib/workOrders";
+import { getWorkOrder, getWorkOrderItems, getShippingDefaults, isWorkOrderReadOnly, getWorkOrderEvents } from "@/lib/workOrders";
 import { listProcessingItems } from "@/lib/erp";
 import { signedPrintUrl } from "@/lib/storage";
 import WorkOrderSheet from "@/components/order/WorkOrderSheet";
@@ -8,6 +8,7 @@ import WorkOrderSheetA4 from "@/components/order/WorkOrderSheetA4";
 import OrderEditForm from "@/components/order/OrderEditForm";
 import PrintButton from "@/components/order/PrintButton";
 import FtpStatusCard from "@/components/order/FtpStatusCard";
+import StationEventsCard from "@/components/order/StationEventsCard";
 import { ensureThumbnail } from "@/lib/thumbnail/generate";
 
 export const dynamic = "force-dynamic";
@@ -37,15 +38,16 @@ export default async function AdminOrderPage({
   const editData = readOnly
     ? null
     : await (async () => {
-        const [processingItems, accessoryItems, erpOptions, shippingDefaults, thumbnailUrl, diagramUrl] = await Promise.all([
+        const [processingItems, accessoryItems, erpOptions, shippingDefaults, thumbnailUrl, diagramUrl, events] = await Promise.all([
           getWorkOrderItems(order.id, "processing"),
           getWorkOrderItems(order.id, "accessory"),
           listProcessingItems(),
           getShippingDefaults(order.member_id),
           order.thumbnail_path ? signedPrintUrl(order.thumbnail_path, 600) : Promise.resolve(null),
           order.diagram_path ? signedPrintUrl(order.diagram_path, 600) : Promise.resolve(null),
+          getWorkOrderEvents(order.id, 20),
         ]);
-        return { processingItems, accessoryItems, erpOptions, shippingDefaults, thumbnailUrl, diagramUrl };
+        return { processingItems, accessoryItems, erpOptions, shippingDefaults, thumbnailUrl, diagramUrl, events };
       })();
 
   return (
@@ -80,6 +82,11 @@ export default async function AdminOrderPage({
               status={order.ftp_status}
               lastError={typeof order.ftp_meta?.last_error === "string" ? (order.ftp_meta.last_error as string) : null}
             />
+          </div>
+        )}
+        {!readOnly && editData && (
+          <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px" }}>
+            <StationEventsCard station={order.station} status={order.status} events={editData.events} />
           </div>
         )}
         {!readOnly && editData && (

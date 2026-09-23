@@ -25,6 +25,19 @@ export async function getAdminByEmail(email: string): Promise<AdminUserWithSecre
   return data as AdminUserWithSecret;
 }
 
+/** 依 id 取管理員（不含密碼）。Phase 3 掃描站／事件記錄用來把 cookie 的 sub 換成顯示用姓名。 */
+export async function getAdminById(id: string): Promise<AdminUser | null> {
+  const db = createAdminSupabase();
+  if (!db || !id) return null;
+  const { data, error } = await db
+    .from("admin_users")
+    .select("id, email, name, active, created_at, last_login_at")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as AdminUser;
+}
+
 export async function touchLastLogin(id: string): Promise<void> {
   const db = createAdminSupabase();
   if (!db) return;

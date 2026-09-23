@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/followups", label: "追蹤與回訪", ic: "✓" },
   { href: "/admin/cases", label: "收稿案件", ic: "▤" },
   { href: "/admin/orders", label: "所有工單", ic: "▥" },
+  { href: "/admin/scan", label: "掃描站", ic: "▣" },
   { href: "/admin/site-images", label: "網站圖片", ic: "▧" },
   { href: "/admin/users", label: "管理員帳號", ic: "♙" },
 ];
