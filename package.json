@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test lib/filename/parser.test.ts lib/site/imageUpload.test.ts lib/admin/customerKnowledgeView.test.ts lib/admin/demoSeedManifest.test.ts lib/admin/adminAssistant.test.ts lib/admin/adminRequest.test.ts lib/memberAccess.test.ts lib/upload/completion.test.ts lib/workOrders.test.ts lib/workOrders.filters.test.ts lib/workOrderValidation.test.ts lib/productionRecordFilters.test.ts lib/workOrder/barcode.test.ts lib/workOrderStations.test.ts lib/erp/productName.test.ts",
+    "test": "node --import tsx --test lib/filename/parser.test.ts lib/site/imageUpload.test.ts lib/admin/customerKnowledgeView.test.ts lib/admin/demoSeedManifest.test.ts lib/admin/adminAssistant.test.ts lib/admin/adminRequest.test.ts lib/memberAccess.test.ts lib/upload/completion.test.ts lib/workOrders.test.ts lib/workOrders.filters.test.ts lib/workOrderValidation.test.ts lib/productionRecordFilters.test.ts lib/workOrder/barcode.test.ts lib/workOrderStations.test.ts lib/erp/productName.test.ts lib/ftp/push.test.ts lib/cron/cronAuth.test.ts",
     "test:parser": "node --import tsx --test lib/filename/parser.test.ts",
     "seed:site-images": "tsx scripts/seedSiteImages.ts",
     "seed:demo-crm": "tsx scripts/seedDemoCrm.ts",
@@ -17,6 +17,8 @@
   "dependencies": {
     "@hyzyla/pdfium": "2.1.13",
     "@supabase/supabase-js": "^2.45.4",
+    "basic-ftp": "6.2.1",
+    "iconv-lite": "0.7.3",
     "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

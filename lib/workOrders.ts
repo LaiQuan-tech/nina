@@ -59,6 +59,11 @@ export type WorkOrder = {
   thumbnail_status: string | null;
   thumbnail_meta: Record<string, unknown>;
   erp_enrich: Record<string, unknown>;
+  // ↓ FTP 推送（supabase/work_order_ftp_schema.sql），全部 nullable；不進 EDITABLE_FIELDS，
+  // 只由 createWorkOrder／app/api/cron/ftp-push／ftp-retry 端點寫入。
+  ftp_status: string | null; // null(不推)/pending/ok/failed/skipped
+  ftp_path: string | null; // 推成功後在 NAS 上的完整路徑（Big5 對應的 UTF-8 顯示）
+  ftp_meta: Record<string, unknown>; // {tries,last_error,last_try_at,pushed_at}
 };
 
 // 使用者可手動編輯的欄位白名單（PATCH 只允許改這些）。
@@ -212,6 +217,9 @@ export async function createWorkOrder(
       plate_material: product.plateMaterial ?? null,
       erp_enrich: product.erpEnrich ?? {},
       thumbnail_status: "pending",
+      // 進推送佇列：app/api/cron/ftp-push 只掃 ftp_status='pending' 的工單（見
+      // work_orders_ftp_pending_idx）。既有工單不回填，只有這裡新建的才會自動推 NAS。
+      ftp_status: "pending",
       ship_name: shipName,
       ship_phone: shipPhone,
       ship_address: shipAddress,

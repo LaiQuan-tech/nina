@@ -7,6 +7,7 @@ import WorkOrderSheet from "@/components/order/WorkOrderSheet";
 import WorkOrderSheetA4 from "@/components/order/WorkOrderSheetA4";
 import OrderEditForm from "@/components/order/OrderEditForm";
 import PrintButton from "@/components/order/PrintButton";
+import FtpStatusCard from "@/components/order/FtpStatusCard";
 import { ensureThumbnail } from "@/lib/thumbnail/generate";
 
 export const dynamic = "force-dynamic";
@@ -72,6 +73,15 @@ export default async function AdminOrderPage({
         </div>
 
         {useLegacy ? <WorkOrderSheet order={order} /> : <WorkOrderSheetA4 order={order} />}
+        {!readOnly && (
+          <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px" }}>
+            <FtpStatusCard
+              orderId={order.id}
+              status={order.ftp_status}
+              lastError={typeof order.ftp_meta?.last_error === "string" ? (order.ftp_meta.last_error as string) : null}
+            />
+          </div>
+        )}
         {!readOnly && editData && (
           <OrderEditForm
             order={order}
