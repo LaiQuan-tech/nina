@@ -1582,3 +1582,50 @@ a.adm-row:hover {
     width: 100%;
   }
 }
+
+/* 後台：所有工單列表（/admin/orders）—— 篩選列要塞 q/status/station/from/to/unmatched
+   六個控制項，原本 .adm-filter-bar 固定 6 欄（2fr + 3×1fr + 送出 + 清除）放不下，
+   用修飾 class 加寬，不改動原規則（customers 頁仍用原本 4 欄版）。 */
+.adm-filter-bar.adm-filter-wide{grid-template-columns:minmax(200px,1.6fr) repeat(5,minmax(108px,1fr)) auto auto;}
+@media (max-width:1100px){.adm-filter-bar.adm-filter-wide{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
+/* 篩選列裡的 checkbox（未比對商品）跟其餘 text/select 欄位版型不同，橫排勾選框＋文字。 */
+.adm-filter-check{flex-direction:row!important;align-items:center;gap:8px;align-self:end;}
+.adm-filter-check input{width:auto!important;min-width:0;min-height:auto!important;flex:none;}
+
+/* 列表頁站別／狀態 pill 共用的無資料樣式 */
+.adm-pill-muted{color:#9aa3b0;}
+
+/* 分頁控制（上一頁／頁碼／下一頁），?page=n 連結一律由 pageHref() 帶齊其餘篩選參數 */
+.adm-pager{display:flex;align-items:center;justify-content:center;gap:14px;margin:22px 0 4px;}
+.adm-pager a,
+.adm-pager span.adm-pager-disabled{display:inline-flex;min-height:38px;align-items:center;justify-content:center;padding:0 16px;border:1px solid #d1d5db;border-radius:9px;color:#1c1c1e;font-size:13px;font-weight:600;text-decoration:none;background:#fff;}
+.adm-pager a:hover{border-color:#0f172a;}
+.adm-pager span.adm-pager-disabled{opacity:.4;pointer-events:none;}
+.adm-pager em{color:#6b7280;font-size:12.5px;font-style:normal;white-space:nowrap;}
+
+/* 工單編輯表單：加工說明／配件多列編輯器（每列 品項/數量/單位/移除） */
+.adm-items-editor{display:grid;gap:8px;margin-top:10px;}
+.adm-items-row{display:grid;grid-template-columns:2.3fr .8fr .9fr auto;gap:8px;align-items:center;}
+.adm-items-row select,
+.adm-items-row input{width:100%;min-width:0;min-height:38px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;font:inherit;font-size:12px;padding:7px 9px;}
+.adm-items-row select:focus,
+.adm-items-row input:focus{border-color:#0284c7;outline:3px solid rgba(14,165,233,.13);}
+.adm-items-row button{min-height:38px;border:1px solid #fecaca;border-radius:8px;background:#fff;color:#b91c1c;font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.adm-items-row button:disabled{opacity:.4;cursor:not-allowed;}
+.adm-items-add{justify-self:start;margin-top:2px;border:1px dashed #94a3b8;border-radius:8px;background:#fff;color:#334155;font:inherit;font-size:12px;font-weight:700;padding:8px 14px;cursor:pointer;}
+/* legacy 無代碼舊品項列：跟真正空白列在下拉選單上長得一樣，這行提示避免被誤刪 */
+.adm-legacy-hint{margin-bottom:4px;color:#b45309;font-size:11px;font-weight:600;}
+.adm-items-save{margin-top:10px;}
+@media (max-width:640px){
+  .adm-items-row{grid-template-columns:1fr 1fr;}
+  .adm-items-row select{grid-column:1/-1;}
+}
+
+/* 欄位級錯誤紅字（validateWorkOrderPatch 的逐欄 errors 顯示用） */
+.adm-field-error{display:block;margin-top:4px;color:#b91c1c;font-size:11px;font-weight:600;}
+.adm-editor-grid input[data-invalid="true"],
+.adm-editor-grid select[data-invalid="true"]{border-color:#ef4444;background:#fff7f7;}
+.adm-editor-grid label.adm-suggest{position:relative;}
+.adm-editor-grid .adm-suggest-hint{margin-top:4px;color:#0369a1;font-size:11px;}
+.adm-editor-grid .adm-suggest-hint button{margin-left:6px;border:0;background:none;color:#0369a1;font:inherit;font-size:11px;font-weight:700;text-decoration:underline;cursor:pointer;padding:0;}

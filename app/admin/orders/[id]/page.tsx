@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
-import { getWorkOrder, isWorkOrderReadOnly } from "@/lib/workOrders";
+import { getWorkOrder, getWorkOrderItems, getShippingDefaults, isWorkOrderReadOnly } from "@/lib/workOrders";
+import { listProcessingItems } from "@/lib/erp";
+import { signedPrintUrl } from "@/lib/storage";
 import WorkOrderSheet from "@/components/order/WorkOrderSheet";
 import WorkOrderSheetA4 from "@/components/order/WorkOrderSheetA4";
 import OrderEditForm from "@/components/order/OrderEditForm";
@@ -30,6 +32,21 @@ export default async function AdminOrderPage({
 
   const backHref = order.session_id ? `/admin/cases` : "/admin";
 
+  // 編輯表單要用到的資料只在可編輯（非 demo）時才查，demo 唯讀頁不必多打這些查詢。
+  const editData = readOnly
+    ? null
+    : await (async () => {
+        const [processingItems, accessoryItems, erpOptions, shippingDefaults, thumbnailUrl, diagramUrl] = await Promise.all([
+          getWorkOrderItems(order.id, "processing"),
+          getWorkOrderItems(order.id, "accessory"),
+          listProcessingItems(),
+          getShippingDefaults(order.member_id),
+          order.thumbnail_path ? signedPrintUrl(order.thumbnail_path, 600) : Promise.resolve(null),
+          order.diagram_path ? signedPrintUrl(order.diagram_path, 600) : Promise.resolve(null),
+        ]);
+        return { processingItems, accessoryItems, erpOptions, shippingDefaults, thumbnailUrl, diagramUrl };
+      })();
+
   return (
     <AdminShell>
       <main style={{ padding: "28px 16px 60px" }}>
@@ -55,7 +72,18 @@ export default async function AdminOrderPage({
         </div>
 
         {useLegacy ? <WorkOrderSheet order={order} /> : <WorkOrderSheetA4 order={order} />}
-        {!readOnly && <OrderEditForm order={order} className="no-print" />}
+        {!readOnly && editData && (
+          <OrderEditForm
+            order={order}
+            processingItems={editData.processingItems}
+            accessoryItems={editData.accessoryItems}
+            erpOptions={editData.erpOptions}
+            shippingDefaults={editData.shippingDefaults}
+            thumbnailUrl={editData.thumbnailUrl}
+            diagramUrl={editData.diagramUrl}
+            className="no-print"
+          />
+        )}
       </main>
     </AdminShell>
   );
