@@ -2,6 +2,9 @@ import { Client as FtpClient } from "basic-ftp";
 import { Readable } from "node:stream";
 import iconv from "iconv-lite";
 import { downloadPrintFile } from "@/lib/storage";
+import { createAdminSupabase } from "@/lib/supabase";
+
+const MAX_FTP_TRIES = 5;
 
 // 印刷檔自動推上美強光 Synology NAS 的 FTP（網站收稿資料夾）。
 // 見 supabase/work_order_ftp_schema.sql：收檔存進 Supabase Storage 後標 ftp_status='pending'，
@@ -142,5 +145,58 @@ export async function pushWorkOrderToFtp(order: FtpPushableOrder): Promise<FtpPu
     return { ok: true, remotePath: filePath };
   } finally {
     client.close();
+  }
+}
+
+/**
+ * 收檔當下即時推一筆並寫回狀態（給 app/api/upload 用 waitUntil 在背景可靠執行）。
+ * 永不 throw——推送是「非同步、不擋客人」的，任何失敗都只落狀態，交給每日 Cron 與後台「重推」補。
+ * 成功→ftp_status='ok'；失敗→tries+1，未達上限維持 'pending'（Cron 會再撿），達上限才 'failed'。
+ * FTP 未設定（本機／未接環境）或 demo 單→回 'skipped'，維持既有狀態不動。
+ */
+export async function pushAndRecordByOrderId(orderId: string): Promise<"ok" | "failed" | "skipped"> {
+  if (!process.env.FTP_HOST) return "skipped"; // 未接 FTP 的環境：留 pending 給 Cron，不churn
+  const db = createAdminSupabase();
+  if (!db) return "skipped";
+
+  const { data } = await db
+    .from("work_orders")
+    .select("id, storage_path, file_name, customer_name, ftp_meta, is_demo")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (!data || data.is_demo) return "skipped";
+
+  const baseMeta = (data.ftp_meta ?? {}) as Record<string, unknown>;
+  try {
+    const result = await pushWorkOrderToFtp({
+      storage_path: data.storage_path,
+      file_name: data.file_name,
+      customer_name: data.customer_name,
+    });
+    await db
+      .from("work_orders")
+      .update({
+        ftp_status: "ok",
+        ftp_path: result.remotePath,
+        ftp_meta: { ...baseMeta, pushed_at: new Date().toISOString(), last_error: null },
+      })
+      .eq("id", orderId);
+    return "ok";
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[ftp/pushAndRecord] 推送失敗 (${orderId}):`, message);
+    const tries = Number((baseMeta as { tries?: unknown }).tries ?? 0) + 1;
+    try {
+      await db
+        .from("work_orders")
+        .update({
+          ftp_status: tries >= MAX_FTP_TRIES ? "failed" : "pending",
+          ftp_meta: { ...baseMeta, tries, last_error: message, last_try_at: new Date().toISOString() },
+        })
+        .eq("id", orderId);
+    } catch {
+      /* 寫狀態也失敗就算了，Cron 還是會用舊的 pending 撿到 */
+    }
+    return "failed";
   }
 }

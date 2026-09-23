@@ -6,6 +6,8 @@ import { resolveProductForOrder } from "@/lib/productLookup";
 import { markSessionSubmitted } from "@/lib/intakeSessions";
 import { getSessionMember } from "@/lib/memberSession";
 import { kickThumbnail } from "@/lib/thumbnail/generate";
+import { pushAndRecordByOrderId } from "@/lib/ftp/push";
+import { waitUntil } from "@vercel/functions";
 
 export const runtime = "nodejs";
 
@@ -58,6 +60,12 @@ export async function POST(req: Request) {
 
   // 縮圖產製不擋收檔：不 await、失敗不影響「送件成功」回應。
   void kickThumbnail(orderId);
+
+  // FTP 推檔不擋收檔：用 waitUntil 在回應後於背景可靠執行（Vercel 不會像一般 fire-and-forget
+  // 那樣把它砍掉），客人立刻看到「送件成功」、檔案背景推上 NAS。pushAndRecordByOrderId 永不
+  // throw，任何失敗都只落 ftp_status 供每日 Cron 與後台「重推」補。Hobby 方案 Cron 只能每日，
+  // 所以即時推主要靠這裡；Cron 是補漏網。
+  waitUntil(pushAndRecordByOrderId(orderId));
 
   // 更新案件狀態（成功件數 +1）
   if (sessionId) await markSessionSubmitted(sessionId, file.name);

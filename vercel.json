@@ -1,5 +1,5 @@
 {
   "crons": [
-    { "path": "/api/cron/ftp-push", "schedule": "*/5 * * * *" }
+    { "path": "/api/cron/ftp-push", "schedule": "0 18 * * *" }
   ]
 }
