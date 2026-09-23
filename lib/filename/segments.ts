@@ -16,11 +16,13 @@ export const SERIAL_RE = /^\d{6}$/;
 export const CUSTOMER_RE = /^\{\((.+?)\)(.+?)\}$/;
 
 // 允許的副檔名（小寫）
-// 只接受這五種印刷檔：TIF、AI、PSD、JPG、PDF（jpg 含 jpeg、tif 含 tiff）。
+// 只接受這幾種印刷檔：TIF、AI、PSD、JPG、PDF、CDR（jpg 含 jpeg、tif 含 tiff）。
 // 其他格式（含舊有的 eps、png）一律不收，前端 ChatUpload 會早擋並請客人重傳。
-export const EXT_ALLOW = ["tif", "tiff", "ai", "psd", "jpg", "jpeg", "pdf"];
+// ⚠️ CDR（CorelDRAW）是專有格式，縮圖管線產不出預覽（會留白、標 unsupported），
+//    後台可手動補圖；其餘格式會自動產縮圖。
+export const EXT_ALLOW = ["tif", "tiff", "ai", "psd", "jpg", "jpeg", "pdf", "cdr"];
 // 給客人看的格式名稱（去重、大寫，用於「請上傳 …」提示）。
-export const EXT_ALLOW_LABEL = "TIF、AI、PSD、JPG、PDF";
+export const EXT_ALLOW_LABEL = "TIF、AI、PSD、JPG、PDF、CDR";
 
 // 第 3 段：有序擷取器。每個 re 以 ^ 錨定「當前游標」，配到就切掉往前走；
 // 哪個 re 在游標處配不上 → 就是那段錯，精準回報。
