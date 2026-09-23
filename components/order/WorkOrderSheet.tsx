@@ -1,14 +1,15 @@
 import type { WorkOrder } from "@/lib/workOrders";
 
 // YYYYMMDD 字串 → 民國 YYY/MM/DD
-function rocFromYmd(ymd: string | null): string {
+// 有 export：components/order/WorkOrderSheetA4.tsx 重用同一份轉換，避免兩處邏輯漂移。
+export function rocFromYmd(ymd: string | null): string {
   if (!ymd || !/^\d{8}$/.test(ymd)) return "";
   const y = Number(ymd.slice(0, 4)) - 1911;
   return `${y}/${ymd.slice(4, 6)}/${ymd.slice(6, 8)}`;
 }
 
 // ISO timestamp → 民國 YYY/MM/DD HH:MM（Asia/Taipei）
-function rocFromIso(iso: string | null): string {
+export function rocFromIso(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";

@@ -2,15 +2,31 @@ import { notFound } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
 import { getWorkOrder, isWorkOrderReadOnly } from "@/lib/workOrders";
 import WorkOrderSheet from "@/components/order/WorkOrderSheet";
+import WorkOrderSheetA4 from "@/components/order/WorkOrderSheetA4";
 import OrderEditForm from "@/components/order/OrderEditForm";
 import PrintButton from "@/components/order/PrintButton";
+import { ensureThumbnail } from "@/lib/thumbnail/generate";
 
 export const dynamic = "force-dynamic";
+// 縮圖 lazy on-demand 產製（PDFium 渲染＋sharp 轉檔）可能要跑幾秒，給足時間。
+export const maxDuration = 60;
 
-export default async function AdminOrderPage({ params }: { params: { id: string } }) {
-  const order = await getWorkOrder(params.id);
+export default async function AdminOrderPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams?: { legacy?: string };
+}) {
+  let order = await getWorkOrder(params.id);
   if (!order) notFound();
   const readOnly = isWorkOrderReadOnly(order);
+  const useLegacy = searchParams?.legacy === "1";
+
+  // 新版 A4 才需要縮圖；demo 資料一律唯讀，不寫任何欄位（含縮圖狀態）。
+  if (!useLegacy && !readOnly) {
+    order = await ensureThumbnail(order);
+  }
 
   const backHref = order.session_id ? `/admin/cases` : "/admin";
 
@@ -38,7 +54,7 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
           </div>
         </div>
 
-        <WorkOrderSheet order={order} />
+        {useLegacy ? <WorkOrderSheet order={order} /> : <WorkOrderSheetA4 order={order} />}
         {!readOnly && <OrderEditForm order={order} className="no-print" />}
       </main>
     </AdminShell>

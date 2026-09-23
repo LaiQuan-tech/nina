@@ -86,6 +86,28 @@ a {
   font-size: 12px;
 }
 
+/* ── 可列印工單 v2：實體 A4 九欄 45 列 ── */
+.wo-a4{--wo-cw:18.55mm;--wo-cw-wide:20.91mm;--wo-rh:5.82mm;--wo-inset:0mm;--wo-line:0.35mm;--wo-fs:8.5pt;--wo-fs-sm:7pt;width:210mm;height:297mm;padding:var(--wo-inset);margin:0 auto;background:#fff;color:#000;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;}
+@media screen{.wo-a4{box-shadow:0 8px 32px rgba(0,0,0,.18);}}
+.wo-a4 .wo-grid{display:grid;grid-template-columns:[cA] var(--wo-cw-wide) [cB] var(--wo-cw) [cC] var(--wo-cw-wide) [cD] var(--wo-cw) [cE] var(--wo-cw) [cF] var(--wo-cw) [cG] var(--wo-cw) [cH] var(--wo-cw) [cI] var(--wo-cw) [cEnd];grid-template-rows:repeat(45,var(--wo-rh));width:171.7mm;height:261.9mm;}
+.wo-a4 .wo-box{border-top:var(--wo-line) solid #000;border-left:var(--wo-line) solid #000;padding:0.6mm 1mm;font-size:var(--wo-fs);line-height:1.2;display:flex;align-items:center;overflow:hidden;word-break:break-all;}
+.wo-a4 .wo-box--r{border-right:var(--wo-line) solid #000;}
+.wo-a4 .wo-box--b{border-bottom:var(--wo-line) solid #000;}
+.wo-a4 .wo-box--label{background:#f0f0f0;font-weight:600;font-size:var(--wo-fs-sm);}
+.wo-a4 .wo-box--section{background:#e4e4e4;font-weight:700;justify-content:center;letter-spacing:2px;}
+.wo-a4 .wo-box--top{align-items:flex-start;}
+.wo-a4 .wo-box--mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:var(--wo-fs-sm);}
+.wo-a4 .wo-bc{flex-direction:column;justify-content:center;gap:0.8mm;padding:1.5mm;}
+.wo-a4 .wo-bc svg{width:100%;height:18mm;display:block;}
+.wo-a4 .wo-bc--sm svg{height:10mm;}
+.wo-a4 .wo-bc-txt{font-family:ui-monospace,Menlo,monospace;font-size:7pt;letter-spacing:1px;}
+.wo-a4 .wo-img{padding:1mm;}
+.wo-a4 .wo-img img{width:100%;height:100%;object-fit:contain;background:#fff;}
+.wo-a4 .wo-img--empty{color:#9ca3af;font-size:var(--wo-fs-sm);justify-content:center;}
+@media screen and (max-width:820px){.wo-a4-wrap{overflow-x:auto;}.wo-a4{transform:scale(.52);transform-origin:top left;}}
+/* 條碼佔位（Phase 3 由 components/order/StationBarcode.tsx 換成真條碼 SVG，框位與 .wo-bc 尺寸不變）。 */
+.wo-a4 .wo-a4-bc-placeholder{width:100%;text-align:center;color:#9ca3af;font-size:var(--wo-fs-sm);letter-spacing:1px;}
+
 /* ══ 後台版面：左側功能列 ══ */
 .adm-shell {
   min-height: 100vh;
@@ -655,6 +677,10 @@ a.adm-row:hover {
   }
   .wo-sheet {
     max-width: 100%;
+  }
+  .wo-a4 {
+    box-shadow: none;
+    transform: none;
   }
 }
 /* ══════════════════════════════════════════════════════════

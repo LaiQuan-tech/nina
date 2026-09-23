@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { parseFilename } from "@/lib/filename/parser";
 import { uploadPrintFile } from "@/lib/storage";
 import { createWorkOrder } from "@/lib/workOrders";
-import { lookupProduct } from "@/lib/productLookup";
+import { resolveProductForOrder } from "@/lib/productLookup";
 import { markSessionSubmitted } from "@/lib/intakeSessions";
 import { getSessionMember } from "@/lib/memberSession";
+import { kickThumbnail } from "@/lib/thumbnail/generate";
 
 export const runtime = "nodejs";
 
@@ -40,21 +41,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "storage_failed" }, { status: 502 });
   }
 
-  // 用檔名末段商品碼查 ERP 商品主檔（soft：查不到仍收檔）
-  const match = await lookupProduct(parsed.segments.spec);
-  const product = match
-    ? { productName: match.name, productCode: match.code, matched: true }
-    : { productName: parsed.segments.productName, productCode: null, matched: false };
+  // 用檔名末段商品碼查 ERP 商品主檔，一次帶出護貝膜/油墨類別/列印方式/版材（soft：查不到仍收檔）
+  const product = await resolveProductForOrder(parsed.segments.spec, parsed.segments.productName);
 
   // 會員身分一律從 cookie 取，不接受前端傳進來的 memberId
   const member = await getSessionMember();
 
+  let orderId: string;
   try {
-    await createWorkOrder(parsed.segments, file.name, path, product, sessionId, member?.id ?? null);
+    const created = await createWorkOrder(parsed.segments, file.name, path, product, sessionId, member?.id ?? null);
+    orderId = created.id;
   } catch (err) {
     console.error("[upload] createWorkOrder failed:", err);
     return NextResponse.json({ ok: false, error: "db_failed" }, { status: 502 });
   }
+
+  // 縮圖產製不擋收檔：不 await、失敗不影響「送件成功」回應。
+  void kickThumbnail(orderId);
 
   // 更新案件狀態（成功件數 +1）
   if (sessionId) await markSessionSubmitted(sessionId, file.name);

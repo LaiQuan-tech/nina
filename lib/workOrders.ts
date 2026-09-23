@@ -40,6 +40,22 @@ export type WorkOrder = {
   status: string;
   created_at: string;
   updated_at: string;
+  // ↓ 工單改版 v2 新欄位（supabase/work_order_v2_schema.sql），全部 nullable。
+  machine_model: string | null;
+  lamination: string | null;
+  ink_type: string | null;
+  print_method: string | null;
+  plate_material: string | null;
+  remark: string | null;
+  ship_name: string | null;
+  ship_phone: string | null;
+  ship_address: string | null;
+  thumbnail_path: string | null;
+  diagram_path: string | null;
+  station: string | null;
+  thumbnail_status: string | null;
+  thumbnail_meta: Record<string, unknown>;
+  erp_enrich: Record<string, unknown>;
 };
 
 // 使用者可手動編輯的欄位白名單（PATCH 只允許改這些）。
@@ -72,6 +88,25 @@ export type ProductResolution = {
   productName: string; // 最終商品名稱（命中→主檔名稱；未命中→材質對照 fallback）
   productCode: string | null; // 命中的商品編號
   matched: boolean;
+  // ↓ Phase 1 新增，皆為 optional：不影響既有呼叫端（lookupProduct 那條路徑不會填這些）。
+  lamination?: string | null; // 護貝膜：亮/霧/細霧（查不到就不填，交人工選）
+  inkType?: string | null; // 油墨類別：只會是白名單內的值，其餘一律留空
+  printMethod?: string | null; // 列印方式
+  plateMaterial?: string | null; // 版材
+  erpEnrich?: Record<string, unknown>; // 完整 ERP 補值結果＋信心度，給 Phase 2 下拉建議用
+};
+
+// work_order_items 一列（加工說明／配件明細）。
+export type WorkOrderItem = {
+  id: string;
+  work_order_id: string;
+  kind: "processing" | "accessory";
+  sort: number;
+  code: string | null;
+  name: string;
+  qty: number | null;
+  unit: string | null;
+  created_at: string;
 };
 
 /** 由 parser 拆出的 segments 建立一張工單。order_no 由 DB trigger 產生。 */
@@ -85,6 +120,24 @@ export async function createWorkOrder(
 ): Promise<{ id: string; order_no: string }> {
   const db = createAdminSupabase();
   if (!db) throw new Error("db_not_configured");
+
+  // 會員資料帶「貨物寄送」預設值（後台仍可手改）；查不到／未帶 memberId 就留空給人工填。
+  let shipName: string | null = null;
+  let shipPhone: string | null = null;
+  let shipAddress: string | null = null;
+  if (memberId) {
+    const { data: member } = await db
+      .from("members")
+      .select("name, phone, phone_display, address")
+      .eq("id", memberId)
+      .maybeSingle();
+    if (member) {
+      shipName = member.name ?? null;
+      shipPhone = member.phone_display ?? member.phone ?? null;
+      shipAddress = member.address ?? null;
+    }
+  }
+
   const { data, error } = await db
     .from("work_orders")
     .insert({
@@ -108,14 +161,37 @@ export async function createWorkOrder(
       product_code: product.productCode,
       product_matched: product.matched,
       total_qty: s.totalQty,
-      single_qty: s.totalQty,
+      // single_qty 不再等於 total_qty（既有瑕疵）：查無稿件切割規則前留白，
+      // 顯示端 fallback 用 single_qty ?? Math.round(total_qty/(draft_count||1))。
       material_spec: s.spec,
       file_ext: s.ext,
+      lamination: product.lamination ?? null,
+      ink_type: product.inkType ?? null,
+      print_method: product.printMethod ?? null,
+      plate_material: product.plateMaterial ?? null,
+      erp_enrich: product.erpEnrich ?? {},
+      thumbnail_status: "pending",
+      ship_name: shipName,
+      ship_phone: shipPhone,
+      ship_address: shipAddress,
     })
     .select("id, order_no")
     .single();
   if (error) throw error;
   return data as { id: string; order_no: string };
+}
+
+/** 取某工單的加工說明／配件明細，依 sort 升冪；kind 不給就兩種都回。 */
+export async function getWorkOrderItems(
+  orderId: string,
+  kind?: "processing" | "accessory"
+): Promise<WorkOrderItem[]> {
+  const db = createAdminSupabase();
+  if (!db || !orderId) return [];
+  let query = db.from("work_order_items").select("*").eq("work_order_id", orderId);
+  if (kind) query = query.eq("kind", kind);
+  const { data } = await query.order("sort", { ascending: true });
+  return (data as WorkOrderItem[]) ?? [];
 }
 
 export async function getWorkOrder(id: string): Promise<WorkOrder | null> {

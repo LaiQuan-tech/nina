@@ -57,6 +57,46 @@ export async function uploadPrintFile(
 }
 
 /**
+ * 從私有 bucket 下載印刷檔原始 bytes（縮圖產製管線用）。
+ * 路徑不存在／bucket 出錯 → 回 null，呼叫端應 graceful 標記失敗，不要 throw 擋收檔。
+ */
+export async function downloadPrintFile(storagePath: string): Promise<ArrayBuffer | null> {
+  const supabase = createAdminSupabase();
+  if (!supabase || !storagePath) return null;
+  try {
+    const { data, error } = await supabase.storage.from(BUCKET).download(storagePath);
+    if (error || !data) return null;
+    return await data.arrayBuffer();
+  } catch (err) {
+    console.error("[storage] downloadPrintFile failed:", err);
+    return null;
+  }
+}
+
+/**
+ * 上傳縮圖（JPEG bytes）到私有 bucket，固定路徑 `thumbs/<work_order_id>.jpg`（upsert，可覆蓋重產）。
+ * 顯示一律走 signedPrintUrl，bucket 維持私有。成功回 true，失敗回 false（不 throw）。
+ */
+export async function uploadThumbnail(path: string, bytes: Buffer | Uint8Array): Promise<boolean> {
+  const supabase = createAdminSupabase();
+  if (!supabase || !path || !bytes || bytes.length === 0) return false;
+  try {
+    const { error } = await supabase.storage.from(BUCKET).upload(path, bytes, {
+      contentType: "image/jpeg",
+      upsert: true,
+    });
+    if (error) {
+      console.error("[storage] uploadThumbnail failed:", error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("[storage] uploadThumbnail failed:", err);
+    return false;
+  }
+}
+
+/**
  * 產印刷檔下載用簽名 URL（限時，預設 600 秒）。
  * downloadName 有給時，瀏覽器會以該檔名下載（用來還原含中文的原始檔名，
  * 因為 storage 內的路徑是淨化過的安全檔名）。
