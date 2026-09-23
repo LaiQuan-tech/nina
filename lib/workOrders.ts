@@ -1,6 +1,7 @@
 import { createAdminSupabase } from "@/lib/supabase";
 import type { Segments } from "@/lib/filename/types";
 import type { StationKey } from "@/lib/workOrder/barcode";
+import { splitMaterialFinish } from "@/lib/erp/productName";
 import { validateWorkOrderPatch } from "./workOrderValidation";
 
 // 工單資料列（對應 work_orders 表；手動欄位可為 null）。
@@ -184,6 +185,10 @@ export async function createWorkOrder(
     }
   }
 
+  // 檔名材質段（例 "pvc+霧"）拆成 基底材質＋護貝膜：材質欄只放基底(pvc)、護貝膜欄放霧。
+  // 護貝膜取值優先序：檔名的 "+霧"（客人對這一單的直接標示）> ERP 名稱/code 推出的值。
+  const { material: baseMaterial, lamination: finishFromName } = splitMaterialFinish(s.material);
+
   const { data, error } = await db
     .from("work_orders")
     .insert({
@@ -202,7 +207,7 @@ export async function createWorkOrder(
       size_w: s.sizeW,
       size_h: s.sizeH,
       size_unit: s.sizeUnit,
-      material_raw: s.material,
+      material_raw: baseMaterial,
       product_name: product.productName,
       product_code: product.productCode,
       product_matched: product.matched,
@@ -211,7 +216,7 @@ export async function createWorkOrder(
       // 顯示端 fallback 用 single_qty ?? Math.round(total_qty/(draft_count||1))。
       material_spec: s.spec,
       file_ext: s.ext,
-      lamination: product.lamination ?? null,
+      lamination: finishFromName ?? product.lamination ?? null,
       ink_type: product.inkType ?? null,
       print_method: product.printMethod ?? null,
       plate_material: product.plateMaterial ?? null,

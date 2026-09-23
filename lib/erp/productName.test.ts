@@ -5,8 +5,42 @@ import {
   deriveInkType,
   derivePrintMethod,
   derivePlateMaterial,
+  splitMaterialFinish,
   INK_WHITELIST,
 } from "./productName";
+
+// ── splitMaterialFinish ───────────────────────────────────────────
+test("splitMaterialFinish: pvc+霧 → 材質 pvc、護貝膜 霧（客戶回報的正解）", () => {
+  assert.deepEqual(splitMaterialFinish("pvc+霧"), { material: "pvc", lamination: "霧" });
+});
+test("splitMaterialFinish: pvc+亮 → 亮", () => {
+  assert.deepEqual(splitMaterialFinish("pvc+亮"), { material: "pvc", lamination: "亮" });
+});
+test("splitMaterialFinish: pvc+細霧 → 細霧（長詞優先，不誤判成霧）", () => {
+  assert.deepEqual(splitMaterialFinish("pvc+細霧"), { material: "pvc", lamination: "細霧" });
+});
+test("splitMaterialFinish: pvc+霧膜 → 霧（膜變體）", () => {
+  assert.deepEqual(splitMaterialFinish("pvc+霧膜"), { material: "pvc", lamination: "霧" });
+});
+test("splitMaterialFinish: 無 + 的材質原樣回、護貝膜 null", () => {
+  assert.deepEqual(splitMaterialFinish("帆布"), { material: "帆布", lamination: null });
+});
+test("splitMaterialFinish: 非護貝膜的 + 段不亂拆（保留在材質）", () => {
+  assert.deepEqual(splitMaterialFinish("pvc+透明"), { material: "pvc+透明", lamination: null });
+});
+test("splitMaterialFinish: 只抽第一個護貝膜段，其餘保留", () => {
+  assert.deepEqual(splitMaterialFinish("pvc+霧+透明"), { material: "pvc+透明", lamination: "霧" });
+});
+test("splitMaterialFinish: 整段以 token 結尾但非整段（霧面貼）不誤拆", () => {
+  assert.deepEqual(splitMaterialFinish("霧面貼"), { material: "霧面貼", lamination: null });
+});
+test("splitMaterialFinish: 含「不含/無/自備」的段不抽（排除語意）", () => {
+  assert.deepEqual(splitMaterialFinish("pvc+不含亮膜"), { material: "pvc+不含亮膜", lamination: null });
+});
+test("splitMaterialFinish: 空字串安全", () => {
+  assert.deepEqual(splitMaterialFinish(""), { material: "", lamination: null });
+  assert.deepEqual(splitMaterialFinish(null), { material: "", lamination: null });
+});
 
 // ── deriveLamination ──────────────────────────────────────────────
 test("deriveLamination: name 命中「霧」（真實 ERP 範例 CCPVC720N）", () => {

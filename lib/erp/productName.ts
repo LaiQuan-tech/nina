@@ -102,6 +102,42 @@ export function deriveLamination(name: string, code: string): FieldGuess | null 
 }
 
 /**
+ * 從檔名解析出的材質段（material_raw，例 "pvc+霧"）拆成「基底材質」與「護貝膜(亮/霧/細霧)」。
+ *
+ * 檔名的材質段是以 "+" 分段的「基底材質＋表面處理」，例 "pvc+霧"＝基底 pvc、護貝膜 霧。
+ * 規則：逐段掃，**整段恰好等於**某個護貝膜 token（細霧膜/細霧/亮膜/亮/霧膜/霧，長詞先比）→ 抽成
+ * 護貝膜、從材質移除；其餘段以 "+" 重組回材質。只抽第一個命中的護貝膜段。含「不含/無/自備」的段
+ * （排除語意）不抽。找不到 → lamination=null、材質原樣回。
+ *
+ * 只做「整段精確等於」的保守抽取（不做 endsWith），避免把 "霧面貼" 這種材質名誤拆；
+ * 因此不會亂拆，最壞情況只是沒抽到（維持原樣，交人工在護貝膜欄補）。
+ *
+ * 用途：建單時材質欄只放基底（pvc），護貝膜欄放 霧；與 deriveLamination（走 ERP 名稱/code）
+ * 互補——檔名的 "+霧" 是客人對「這一單」的直接標示，優先於 ERP 主檔的通用名稱。
+ */
+export function splitMaterialFinish(
+  materialRaw: string | null | undefined
+): { material: string; lamination: string | null } {
+  const raw = String(materialRaw ?? "").trim();
+  if (!raw) return { material: "", lamination: null };
+  const kept: string[] = [];
+  let lamination: string | null = null;
+  for (const rawSeg of raw.split("+")) {
+    const seg = rawSeg.trim();
+    if (!seg) continue;
+    if (lamination === null && !NEG_RE.test(seg)) {
+      const hit = LAM_TOKENS.find(([, variants]) => variants.includes(seg));
+      if (hit) {
+        lamination = hit[0];
+        continue;
+      }
+    }
+    kept.push(seg);
+  }
+  return { material: kept.join("+"), lamination };
+}
+
+/**
  * 油墨類別：sub_name（match_product_v2 join 出的 erp_sub_products.name）落在白名單才寫入(high)。
  * 不在白名單 → 回 null（呼叫端把 sub_name 放進 erp_enrich.family 當 Phase 2 下拉建議，
  * 絕不寫進 ink_type，否則會印出「馬克杯」這類非油墨類別字樣）。
@@ -150,6 +186,6 @@ export function derivePlateMaterial(name: string): FieldGuess | null {
   return null;
 }
 
-// 註：material（材質）刻意不在這裡做——工單一律直接用檔名解析出的 material_raw
-// （檔名真相，例 "pvc+霧"），查無 fallback product_name，不從 ERP 猜。
-// machine_model（機台型號）四表皆無資料，一律留空手填，同樣不在這裡處理。
+// 註：material（材質）不從 ERP 猜——但會用上面的 splitMaterialFinish 把檔名 material_raw 的
+// "+霧"／"+亮"／"+細霧" 這類表面處理抽到護貝膜欄，材質欄只留基底（例 pvc）。查無 ERP 時
+// product_name 仍 fallback 用材質對照。machine_model（機台型號）四表皆無資料，一律留空手填。
