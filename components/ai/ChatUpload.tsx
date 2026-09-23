@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ParseResult } from "@/lib/filename/publicTypes";
+import { EXT_ALLOW, EXT_ALLOW_LABEL } from "@/lib/filename/segments";
 import { summarizeUploadBatch, type UploadBatchSummary } from "@/lib/upload/completion";
 
 type Msg = { role: "user" | "model"; text: string; tone?: "ok" | "err" };
@@ -75,6 +76,18 @@ export default function ChatUpload({
 
   async function processFile(file: File): Promise<boolean> {
     add({ role: "user", text: `📄 ${file.name}` });
+
+    // 0) 先擋檔案格式：只接受 TIF/AI/PSD/JPG/PDF。格式不對就請客人重傳，
+    //    不進檔名引導、不上傳（拖拉會繞過 <input accept>，所以這裡才是真正的關卡）。
+    const ext = file.name.includes(".") ? file.name.split(".").pop()!.toLowerCase() : "";
+    if (!EXT_ALLOW.includes(ext)) {
+      add({
+        role: "model",
+        tone: "err",
+        text: `這個檔案格式不支援。我們只接受 ${EXT_ALLOW_LABEL} 檔，請換成正確的格式再上傳一次。`,
+      });
+      return false;
+    }
 
     try {
       // 1) 只送檔名驗證（不傳 bytes）
@@ -167,7 +180,7 @@ export default function ChatUpload({
         type="file"
         hidden
         multiple
-        accept=".ai,.pdf,.eps,.psd,.tif,.tiff,.jpg,.jpeg,.png"
+        accept={EXT_ALLOW.map((e) => "." + e).join(",")}
         onChange={(e) => void handleFiles(e.target.files)}
       />
       <button
