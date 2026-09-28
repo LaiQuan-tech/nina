@@ -10,6 +10,7 @@ import {
   mergeCustomerTimeline,
   sortCustomersByLastInteraction,
   taipeiCalendarBoundaries,
+  truncateExcerpt,
   validateFollowupInput,
   validateCustomerProfilePatch,
 } from "./customerKnowledgeView";
@@ -201,4 +202,26 @@ test("回訪離開完成狀態時會清除 completed_at", () => {
   assert.deepEqual(followupCompletionPatch("open"), { completed_at: null });
   assert.deepEqual(followupCompletionPatch("cancelled"), { completed_at: null });
   assert.deepEqual(followupCompletionPatch(undefined), {});
+});
+
+test("truncateExcerpt：80 字以內原樣回傳", () => {
+  const text = "客戶需要 90x180cm 帆布，週五前交貨";
+  assert.equal(truncateExcerpt(text), text);
+  const exactly80 = "字".repeat(80);
+  assert.equal(truncateExcerpt(exactly80), exactly80);
+  assert.equal(truncateExcerpt(""), "");
+});
+
+test("truncateExcerpt：超過就截到 80 字再補「…」，尾端空白先去掉", () => {
+  const long = "帆".repeat(79) + "　" + "布".repeat(50);
+  const out = truncateExcerpt(long);
+  assert.equal(out, "帆".repeat(79) + "…");
+  assert.equal(truncateExcerpt("字".repeat(81)), "字".repeat(80) + "…");
+  assert.equal(truncateExcerpt("abcdef", 3), "abc…");
+});
+
+test("truncateExcerpt：以 Unicode 字元計，不會把 emoji 切成半個", () => {
+  const out = truncateExcerpt("🎉".repeat(81));
+  assert.equal(out, "🎉".repeat(80) + "…");
+  assert.equal(Array.from(out).length, 81);
 });

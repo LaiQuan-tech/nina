@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CustomerFollowup, KnowledgeCustomer } from "@/lib/admin/customerKnowledge";
+
+/** 「新增回訪」客戶下拉只需要這三欄（頁面只傳這些，不傳整包客戶資料）。 */
+export type FollowupCustomerOption = Pick<KnowledgeCustomer, "id" | "company" | "name">;
 import { bucketFollowups } from "@/lib/admin/customerKnowledgeView";
 
 const BUCKETS = [
@@ -49,7 +52,7 @@ function editFormFor(item: CustomerFollowup): FollowupForm {
   };
 }
 
-export default function FollowupBoard({ initial, customers }: { initial: CustomerFollowup[]; customers: KnowledgeCustomer[] }) {
+export default function FollowupBoard({ initial, customers }: { initial: CustomerFollowup[]; customers: FollowupCustomerOption[] }) {
   const router = useRouter();
   const [items, setItems] = useState(initial);
   const [filter, setFilter] = useState<FollowupStatus>("open");

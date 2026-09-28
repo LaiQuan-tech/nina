@@ -3,6 +3,11 @@ import { getWorkOrder, isWorkOrderReadOnly } from "@/lib/workOrders";
 import { signedPrintUrl } from "@/lib/storage";
 
 export const runtime = "nodejs";
+// ⚠️ 一定要有：這個 module 只有 GET、又沒讀 cookies()/req，Next 14 會把它當成可快取的路由（revalidate 預設 false），
+// supabase-js 的查詢連簽名 URL 的 POST 都會被存進 Data Cache 一年——10 分鐘後同一張單再按下載，拿到的是
+// 快取裡早已過期的簽名（Supabase 回 400 InvalidJWT）。`dynamic = "force-dynamic"` 在 14.2 擋不住這件事。
+// （lib/supabase.ts 的 createAdminSupabase 也已預設 no-store，這裡是第二道保險。）
+export const revalidate = 0;
 
 // GET → 產生限時簽名網址後轉址下載（bucket 維持私有，不對外公開）。
 // 本路由位於 /api/admin/* 之下，已由 middleware 保護：未登入回 401。

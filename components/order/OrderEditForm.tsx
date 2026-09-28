@@ -6,6 +6,7 @@ import { EDITABLE_FIELDS, type EditableField, type WorkOrder, type WorkOrderItem
 import type { ProcessingItemOption } from "@/lib/erp";
 import { STATION_LABELS, type StationKey } from "@/lib/workOrder/barcode";
 import { INK_WHITELIST } from "@/lib/erp/productName";
+import { itemOptionLabel } from "@/lib/erp/itemOptionLabel";
 
 // ── 常數 ──────────────────────────────────────────────────────────────
 
@@ -476,16 +477,13 @@ function ItemsEditor({
                 <select name={`${prefix}_code_${idx}`} value={row.code} onChange={(e) => onSelectCode(idx, e.target.value)}>
                   <option value="">（不使用）</option>
                   {unmatchedLegacy && (
-                    <option value={row.code}>
-                      {row.code}（原資料，不在目前主檔）
-                    </option>
+                    <option value={row.code}>{`${row.code}（原資料，不在目前主檔）`}</option>
                   )}
                   {common.length > 0 && (
                     <optgroup label="常用">
                       {common.map((opt) => (
                         <option key={`common-${opt.code}`} value={opt.code}>
-                          {opt.code} {opt.name}
-                          {opt.unit ? `（${opt.unit}）` : ""}
+                          {itemOptionLabel(opt)}
                         </option>
                       ))}
                     </optgroup>
@@ -494,8 +492,7 @@ function ItemsEditor({
                     <optgroup key={group} label={group}>
                       {opts.map((opt) => (
                         <option key={opt.code} value={opt.code}>
-                          {opt.code} {opt.name}
-                          {opt.unit ? `（${opt.unit}）` : ""}
+                          {itemOptionLabel(opt)}
                         </option>
                       ))}
                     </optgroup>

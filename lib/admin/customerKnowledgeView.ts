@@ -48,6 +48,17 @@ export function latestHistoricalEventAt(events: HistoricalEventSource[]): string
     .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] ?? null;
 }
 
+/**
+ * 顯示用摘錄：超過 max 個字（以 Unicode 字元計，不會切壞 emoji）就截斷並補「…」。
+ * 服務知識庫卡片的摘錄 CSS 只顯示 2 行（1280px 寬約 76~78 字），整段對話全文送進 HTML＋RSC 兩份是白費；
+ * 搜尋比對仍在截短「之前」用全文做，這裡只影響顯示。
+ */
+export function truncateExcerpt(text: string, max = 80): string {
+  const chars = Array.from(text ?? "");
+  if (chars.length <= max) return text ?? "";
+  return `${chars.slice(0, max).join("").trimEnd()}…`;
+}
+
 export function sortCustomersByLastInteraction<T extends { lastInteractionAt: string | null }>(customers: T[]): T[] {
   return [...customers].sort(
     (a, b) => new Date(b.lastInteractionAt ?? 0).getTime() - new Date(a.lastInteractionAt ?? 0).getTime(),

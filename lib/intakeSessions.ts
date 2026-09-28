@@ -120,17 +120,26 @@ export async function markSessionSubmitted(sessionId: string, fileName: string):
 }
 
 // ── 後台讀取（admin client）──
-export async function getIntakeSessions(limit = 200): Promise<IntakeSession[]> {
+
+// 案件列表只顯示這 7 欄：不要 select *（messages 是整段對話的 jsonb，user_agent／user_ip 列表也用不到）。
+const SESSION_LIST_COLUMNS = "id, contact_name, contact_email, contact_phone, status, submitted_count, updated_at";
+
+export type IntakeSessionListRow = Pick<
+  IntakeSession,
+  "id" | "contact_name" | "contact_email" | "contact_phone" | "status" | "submitted_count" | "updated_at"
+>;
+
+export async function getIntakeSessions(limit = 200): Promise<IntakeSessionListRow[]> {
   const db = createAdminSupabase();
   if (!db) return [];
   const production = productionSessionFilter();
   const { data } = await db
     .from("intake_sessions")
-    .select("*")
+    .select(SESSION_LIST_COLUMNS)
     .eq(production.column, production.value)
     .order("updated_at", { ascending: false })
     .limit(limit);
-  return (data as IntakeSession[]) ?? [];
+  return (data as IntakeSessionListRow[] | null) ?? [];
 }
 
 export async function getIntakeSession(id: string): Promise<IntakeSession | null> {

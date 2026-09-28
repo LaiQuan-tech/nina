@@ -20,8 +20,10 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC",
-    "Microsoft JhengHei", sans-serif;
+  /* 中文先用系統字（蘋方／微軟正黑）：工單詳情頁為了 A4 會載入 Noto Sans TC，若它排在前面，那一頁的側欄與表單
+     中文也會跟著換成 Noto，跟其他後台頁不一致。A4（.wo-a4）與前台（.mei）各有自己的字體堆疊，不受影響。 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei",
+    "Noto Sans TC", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -707,6 +709,10 @@ a.adm-row:hover {
   .wo-a4 {
     box-shadow: none;
     transform: none;
+  }
+  /* 縮圖格的狀態提示（縮圖產生中…／失敗／不支援）只給螢幕看：印出來保留空白縮圖框，不把提示字印上工單 */
+  .wo-a4 .wo-img--hint {
+    visibility: hidden !important;
   }
 }
 /* ══════════════════════════════════════════════════════════

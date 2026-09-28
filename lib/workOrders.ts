@@ -235,6 +235,20 @@ export async function createWorkOrder(
   return data as { id: string; order_no: string };
 }
 
+/**
+ * 把「一次查回兩種 kind」的明細拆成加工說明／配件兩組，各自保持原本（sort 升冪）的順序。
+ * 工單詳情頁用：一個查詢取代以前 kind=processing、kind=accessory 各查一次。
+ */
+export function splitWorkOrderItems(items: WorkOrderItem[]): { processing: WorkOrderItem[]; accessory: WorkOrderItem[] } {
+  const processing: WorkOrderItem[] = [];
+  const accessory: WorkOrderItem[] = [];
+  for (const item of items) {
+    if (item.kind === "processing") processing.push(item);
+    else if (item.kind === "accessory") accessory.push(item);
+  }
+  return { processing, accessory };
+}
+
 /** 取某工單的加工說明／配件明細，依 sort 升冪；kind 不給就兩種都回。 */
 export async function getWorkOrderItems(
   orderId: string,
@@ -339,18 +353,26 @@ export async function getWorkOrder(id: string): Promise<WorkOrder | null> {
   return data as WorkOrder;
 }
 
-/** 取某案件（session）底下的所有工單，新到舊。 */
-export async function getWorkOrdersBySession(sessionId: string): Promise<WorkOrder[]> {
+// 案件詳情頁的「收件工單」清單只顯示這幾欄——不要 select *（parsed/erp_enrich/thumbnail_meta/ftp_meta 等 jsonb 用不到）。
+const SESSION_ORDER_COLUMNS = "id, order_no, product_name, material_raw, product_matched, file_name";
+
+export type SessionWorkOrderRow = Pick<
+  WorkOrder,
+  "id" | "order_no" | "product_name" | "material_raw" | "product_matched" | "file_name"
+>;
+
+/** 取某案件（session）底下的所有工單，新到舊（只回案件詳情頁用到的欄位）。 */
+export async function getWorkOrdersBySession(sessionId: string): Promise<SessionWorkOrderRow[]> {
   const db = createAdminSupabase();
   if (!db || !sessionId) return [];
   const production = productionWorkOrderFilter();
   const { data } = await db
     .from("work_orders")
-    .select("*")
+    .select(SESSION_ORDER_COLUMNS)
     .eq("session_id", sessionId)
     .eq(production.column, production.value)
     .order("created_at", { ascending: false });
-  return (data as WorkOrder[]) ?? [];
+  return (data as SessionWorkOrderRow[] | null) ?? [];
 }
 
 /** 更新工單（只接受白名單欄位＋通過驗證；空字串轉 null）。 */
@@ -582,21 +604,19 @@ export async function getShippingDefaults(memberId: string | null | undefined): 
   const db = createAdminSupabase();
   if (!db) return null;
 
-  const { data: member } = await db
-    .from("members")
-    .select("name, phone, phone_display")
-    .eq("id", memberId)
-    .maybeSingle();
+  // 兩個查詢互不依賴：並行（以前先等會員、再查地址，工單詳情頁多一趟往返）。
+  const [{ data: member }, { data: lastOrder }] = await Promise.all([
+    db.from("members").select("name, phone, phone_display").eq("id", memberId).maybeSingle(),
+    db
+      .from("work_orders")
+      .select("ship_address")
+      .eq("member_id", memberId)
+      .not("ship_address", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
   if (!member) return null;
-
-  const { data: lastOrder } = await db
-    .from("work_orders")
-    .select("ship_address")
-    .eq("member_id", memberId)
-    .not("ship_address", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
 
   return {
     name: member.name ?? null,

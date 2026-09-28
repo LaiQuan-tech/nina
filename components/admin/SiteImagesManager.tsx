@@ -105,8 +105,17 @@ export default function SiteImagesManager({ initial }: { initial: SiteImageAdmin
                 <article className="adm-site-card" key={image.slotKey}>
                   <div className="adm-site-preview" style={{ aspectRatio: image.aspect.replace(":", " / ") }}>
                     {preview ? (
+                      // 一頁 14 張原尺寸圖：lazy＋async 解碼，捲到才載；已知尺寸就給 width/height 讓瀏覽器先留好比例
+                      // （顯示大小仍由 CSS 的 100%／object-fit 決定）。待上傳的本機預覽尺寸未知，不給。
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={preview} alt={draft ? `待上傳預覽：${image.alt}` : image.alt} />
+                      <img
+                        src={preview}
+                        alt={draft ? `待上傳預覽：${image.alt}` : image.alt}
+                        loading="lazy"
+                        decoding="async"
+                        width={!draft && image.width ? image.width : undefined}
+                        height={!draft && image.height ? image.height : undefined}
+                      />
                     ) : (
                       <div className="adm-site-empty">尚未上圖</div>
                     )}

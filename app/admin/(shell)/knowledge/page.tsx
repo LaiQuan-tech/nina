@@ -1,5 +1,6 @@
 import ServiceKnowledgeSearch from "@/components/admin/ServiceKnowledgeSearch";
 import { searchServiceKnowledge } from "@/lib/admin/customerKnowledge";
+import { truncateExcerpt } from "@/lib/admin/customerKnowledgeView";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -7,7 +8,8 @@ export const revalidate = 0;
 export default async function KnowledgePage({ searchParams }: { searchParams?: { q?: string; type?: string } }) {
   const query = searchParams?.q?.trim() || "";
   const type = ["conversation", "quote", "order"].includes(searchParams?.type || "") ? searchParams!.type! : "all";
-  const results = await searchServiceKnowledge(query, type);
+  // 比對用全文（searchServiceKnowledge 內），顯示只送約 80 字：卡片 CSS 本來就只顯示 2 行。
+  const results = (await searchServiceKnowledge(query, type)).map((result) => ({ ...result, excerpt: truncateExcerpt(result.excerpt) }));
   return <main className="adm-crm-page">
     <header className="adm-crm-title"><div><div className="adm-demo-tag">SERVICE KNOWLEDGE</div><h1>服務知識庫</h1><p>跨客戶搜尋對話、需求、報價、稿件與工單。</p></div><span className="adm-result-count">{results.length} 筆結果</span></header>
     {/* key 隨網址參數變：只改 search params 的 client 換頁（分頁、上一頁／下一頁、AI 小幫手連結）不會重掛頁面元件，select 的 defaultValue 變了 React 也不會重設，靠 key 讓表單跟著網址重建 */}

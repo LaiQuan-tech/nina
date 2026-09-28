@@ -1,23 +1,17 @@
-// 印刷檔縮圖管線：lazy on-demand（工單詳情頁開啟時觸發一次），失敗只落狀態、絕不擋收檔／擋看單。
+// 印刷檔縮圖管線：收檔後由 upload 路由 waitUntil 背景產一次（lib/thumbnail/kick.ts）；沒產成的，
+// 工單詳情頁掛的 client 元件會打 /api/admin/order/[id]/thumbnail/generate 補產。失敗只落狀態、絕不擋收檔／擋看單。
+// ⚠️ 這支會載入 sharp 與 PDFium：只准在 API 路由裡用（而且盡量 dynamic import），頁面的 import 鏈不能碰它；
+// 頁面要判斷「該不該產」請用 ./policy。
 import sharp from "sharp";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminSupabase } from "@/lib/supabase";
-import { downloadPrintFile, uploadThumbnail } from "@/lib/storage";
-import { getWorkOrder, type WorkOrder } from "@/lib/workOrders";
+import { downloadPrintFile, printFileSize, removeAutoThumbnail, uploadThumbnail } from "@/lib/storage";
 import { renderPdfFirstPageToRaw } from "./renderPdf";
+import { readThumbnailRow, runThumbnailJob, type ThumbnailJobResult, type ThumbnailRow } from "./job";
+import { THUMBNAIL_EDGE } from "./policy";
 
-const MAX_SOURCE_BYTES = 25 * 1024 * 1024; // >25MB 直接標 unsupported，不嘗試渲染
-const MAX_TRIES = 3; // thumbnail_status='failed' 且已重試滿這個次數就不再自動重跑
-const THUMB_SIZE = 1200; // resize 邊界（inside，不放大）
+export type { ThumbnailMeta } from "./policy";
+
 const JPEG_QUALITY = 78;
-
-export type ThumbnailMeta = {
-  tries?: number;
-  last_error?: string;
-  last_try_at?: string;
-  reason?: string;
-  [key: string]: unknown;
-};
 
 type SourceKind = "pdf" | "raster" | "unsupported";
 
@@ -65,7 +59,7 @@ async function toThumbBuffer(
 ): Promise<Buffer> {
   const pipeline = raw ? sharp(buffer, { raw }) : sharp(buffer);
   return pipeline
-    .resize(THUMB_SIZE, THUMB_SIZE, { fit: "inside", withoutEnlargement: true })
+    .resize(THUMBNAIL_EDGE, THUMBNAIL_EDGE, { fit: "inside", withoutEnlargement: true })
     .flatten({ background: "#fff" })
     .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
     .toBuffer();
@@ -73,7 +67,8 @@ async function toThumbBuffer(
 
 /**
  * 把印刷檔原始 bytes 渲染成縮圖 JPEG。PDF 走 PDFium 開第 1 頁，其餘走 sharp 直通。
- * 開不了／不支援的格式 → 回 null（呼叫端標記 unsupported，不 throw）。
+ * 開不了／不支援的格式 → 回 null（呼叫端標記 unsupported）。
+ * PDFium 引擎本身出錯（init 失敗、wasm 崩潰…）→ 丟 PdfEngineError：那是可重試的失敗，不是格式不支援。
  * 同時給自動管線（.ai/.tif/.psd…）與手動補圖端點（jpeg/png/webp/pdf）共用，行為一致。
  */
 export async function renderToThumbnailJpeg(bytes: Uint8Array): Promise<Buffer | null> {
@@ -95,106 +90,29 @@ export async function renderToThumbnailJpeg(bytes: Uint8Array): Promise<Buffer |
   }
 }
 
-function isManualPath(path: string | null | undefined): boolean {
-  return !!path && path.includes("-manual-");
-}
-
-function asThumbnailMeta(value: unknown): ThumbnailMeta {
-  return value && typeof value === "object" ? (value as ThumbnailMeta) : {};
-}
-
 /**
- * 落 DB 狀態，刻意自己吞掉所有錯誤（包含 update 本身失敗）：
- * 這支會被 ensureThumbnail 的 catch 區塊呼叫，若這裡再拋錯就沒有更外層能接了，
- * 而縮圖狀態寫不進去絕對不該讓工單詳情頁跟著壞掉——退而求其次回傳「本地合併版」即可。
+ * 產一次縮圖（收檔後的背景觸發，或工單詳情頁 client 元件打產圖端點時）。
+ * 搶租約、產圖、有條件寫回的規則都在 ./job.ts（runThumbnailJob）；這裡只負責接上真的 Supabase／Storage／渲染器。
+ * 不符合開工條件（已有縮圖／終態／開工滿上限／別人正在產）時不會產，只回報目前狀態。絕不 throw。
  */
-async function persist(
-  db: SupabaseClient,
-  order: WorkOrder,
-  patch: Partial<Pick<WorkOrder, "thumbnail_path" | "thumbnail_status" | "thumbnail_meta">>
-): Promise<WorkOrder> {
-  try {
-    const { data, error } = await db.from("work_orders").update(patch).eq("id", order.id).select("*").single();
-    if (error || !data) return { ...order, ...patch };
-    return data as WorkOrder;
-  } catch (err) {
-    console.error("[thumbnail] persist failed:", err);
-    return { ...order, ...patch };
-  }
-}
-
-/**
- * Lazy on-demand 縮圖產製：工單詳情頁發現「還沒有縮圖、狀態允許重試」時呼叫一次。
- *
- * 不需要重跑的情況直接原樣回傳：已有 thumbnail_path、路徑含 "-manual-"（人工補過，
- * 自動管線一律跳過）、狀態是終態（ok/unsupported/manual）、或 failed 已達重試上限。
- * 任何錯誤都只落 DB 狀態（failed + tries/last_error/last_try_at），絕不 throw——
- * 縮圖從來不是收檔或看單的關卡。
- */
-export async function ensureThumbnail(order: WorkOrder): Promise<WorkOrder> {
-  if (order.thumbnail_path || isManualPath(order.thumbnail_path)) return order;
-  if (order.thumbnail_status && order.thumbnail_status !== "pending" && order.thumbnail_status !== "failed") {
-    return order; // ok / unsupported / manual：不重跑
-  }
-
-  const meta = asThumbnailMeta(order.thumbnail_meta);
-  const tries = meta.tries ?? 0;
-  if (order.thumbnail_status === "failed" && tries >= MAX_TRIES) return order;
-
+export async function ensureThumbnail(order: ThumbnailRow): Promise<ThumbnailJobResult> {
   const db = createAdminSupabase();
-  if (!db) return order;
-
-  try {
-    const source = await downloadPrintFile(order.storage_path);
-    if (!source) throw new Error("download_failed");
-
-    if (source.byteLength > MAX_SOURCE_BYTES) {
-      return await persist(db, order, {
-        thumbnail_status: "unsupported",
-        thumbnail_meta: { ...meta, reason: "too_large" },
-      });
-    }
-
-    const jpeg = await renderToThumbnailJpeg(new Uint8Array(source));
-    if (!jpeg) {
-      return await persist(db, order, {
-        thumbnail_status: "unsupported",
-        thumbnail_meta: { ...meta, reason: "unsupported_format" },
-      });
-    }
-
-    const path = `thumbs/${order.id}.jpg`;
-    const uploaded = await uploadThumbnail(path, jpeg);
-    if (!uploaded) throw new Error("upload_failed");
-
-    return await persist(db, order, {
-      thumbnail_path: path,
-      thumbnail_status: "ok",
-      thumbnail_meta: meta,
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return await persist(db, order, {
-      thumbnail_status: "failed",
-      thumbnail_meta: { ...meta, tries: tries + 1, last_error: message, last_try_at: new Date().toISOString() },
-    });
-  }
+  if (!db) return { row: order, ran: false, inProgress: false, confirmed: false };
+  return runThumbnailJob(order, {
+    db,
+    printFileSize,
+    downloadPrintFile,
+    renderJpeg: renderToThumbnailJpeg,
+    uploadNewThumbnail: (path, jpeg) => uploadThumbnail(path, jpeg, { upsert: false }),
+    removeThumbnail: removeAutoThumbnail,
+  });
 }
 
-async function kickThumbnailAsync(orderId: string): Promise<void> {
-  try {
-    const order = await getWorkOrder(orderId);
-    if (!order) return;
-    await ensureThumbnail(order);
-  } catch (err) {
-    console.error("[thumbnail] kickThumbnail failed:", err);
-  }
-}
-
-/**
- * 建單後「順手」觸發一次縮圖產製，不 await、失敗不 throw（收檔優先，縮圖是錦上添花）。
- * 呼叫端只需要 `void kickThumbnail(orderId)`。
- */
-export function kickThumbnail(orderId: string): void {
-  void kickThumbnailAsync(orderId);
+/** 依工單 id 產縮圖（收檔後的背景觸發用）：查不到工單就什麼都不做。錯誤由呼叫端（kick.ts）接住。 */
+export async function ensureThumbnailById(orderId: string): Promise<void> {
+  const db = createAdminSupabase();
+  if (!db) return;
+  const row = await readThumbnailRow(db, orderId);
+  if (!row) return;
+  await ensureThumbnail(row);
 }

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createAdminSupabase } from "@/lib/supabase";
 import {
   buildDailyActivity,
@@ -22,7 +23,6 @@ type MemberRow = {
   payment_terms: string;
   paid_order_count: number;
   created_at: string;
-  updated_at: string;
 };
 
 export type CustomerProfile = {
@@ -124,7 +124,7 @@ const EMPTY_PROFILE: Omit<CustomerProfile, "member_id"> = {
   last_summary_at: null,
 };
 
-type DemoCollections = {
+export type DemoCollections = {
   members: MemberRow[];
   profiles: CustomerProfile[];
   sessions: any[];
@@ -133,28 +133,82 @@ type DemoCollections = {
   followups: any[];
 };
 
-async function loadDemoCollections(): Promise<DemoCollections> {
-  const db = createAdminSupabase();
-  if (!db) return { members: [], profiles: [], sessions: [], quotes: [], orders: [], followups: [] };
-  const [members, profiles, sessions, quotes, orders, followups] = await Promise.all([
-    db.from("members").select("id,name,company,phone,phone_display,email,status,payment_terms,paid_order_count,created_at,updated_at").eq("is_demo", true).limit(100),
-    db.from("customer_profiles").select("member_id,industry,customer_tier,tags,preferred_contact,preferred_materials,preferred_products,preferred_processing,preferred_delivery,common_sizes,price_sensitivity,ai_summary,service_notes,last_summary_at").eq("is_demo", true).limit(100),
-    db.from("intake_sessions").select("id,session_id,member_id,messages,status,submitted_count,last_file_name,created_at,updated_at").eq("is_demo", true).limit(200),
-    db.from("quotes").select("id,quote_no,member_id,title,amount,status,items,created_at,updated_at").eq("is_demo", true).limit(200),
-    db.from("work_orders").select("id,order_no,member_id,design_name,product_name,material_raw,processing_items,file_name,status,created_at,updated_at").eq("is_demo", true).limit(300),
-    db.from("customer_followups").select("id,member_id,title,reason,priority,status,assignee,due_at,completed_at,created_at,updated_at").eq("is_demo", true).limit(200),
-  ]);
-  for (const result of [members, profiles, sessions, quotes, orders, followups]) {
+// 各表只選「某個消費端真的會讀」的欄位（updated_at、quotes.items、sessions 的 session_id/submitted_count/
+// last_file_name 都沒人用）。intake_sessions.messages 是整段對話的 jsonb，只有服務知識庫（摘錄／全文比對）
+// 與單一客戶的服務歷程需要，其餘（總覽、客戶列表、回訪、AI 小幫手）一律不撈。
+const MEMBER_COLUMNS = "id,name,company,phone,phone_display,email,status,payment_terms,paid_order_count,created_at";
+const PROFILE_COLUMNS =
+  "member_id,industry,customer_tier,tags,preferred_contact,preferred_materials,preferred_products,preferred_processing,preferred_delivery,common_sizes,price_sensitivity,ai_summary,service_notes,last_summary_at";
+const SESSION_COLUMNS = "id,member_id,status,created_at";
+const SESSION_COLUMNS_WITH_MESSAGES = `${SESSION_COLUMNS},messages`;
+const QUOTE_COLUMNS = "id,quote_no,member_id,title,amount,status,created_at";
+const ORDER_COLUMNS = "id,order_no,member_id,design_name,product_name,material_raw,processing_items,file_name,status,created_at";
+const FOLLOWUP_COLUMNS = "id,member_id,title,reason,priority,status,assignee,due_at,completed_at,created_at";
+
+const EMPTY_COLLECTIONS: DemoCollections = { members: [], profiles: [], sessions: [], quotes: [], orders: [], followups: [] };
+
+type QueryResult = { data: unknown; error: { message: string } | null };
+
+function collect(results: [QueryResult, QueryResult, QueryResult, QueryResult, QueryResult, QueryResult]): DemoCollections {
+  for (const result of results) {
     if (result.error) console.error("[customer-knowledge] query failed", result.error.message);
   }
+  const [members, profiles, sessions, quotes, orders, followups] = results;
   return {
-    members: (members.data as MemberRow[]) ?? [],
-    profiles: (profiles.data as CustomerProfile[]) ?? [],
-    sessions: sessions.data ?? [],
-    quotes: quotes.data ?? [],
-    orders: orders.data ?? [],
-    followups: followups.data ?? [],
+    members: (members.data as MemberRow[] | null) ?? [],
+    profiles: (profiles.data as CustomerProfile[] | null) ?? [],
+    sessions: (sessions.data as any[] | null) ?? [],
+    quotes: (quotes.data as any[] | null) ?? [],
+    orders: (orders.data as any[] | null) ?? [],
+    followups: (followups.data as any[] | null) ?? [],
   };
+}
+
+async function fetchDemoCollections(withMessages: boolean): Promise<DemoCollections> {
+  const db = createAdminSupabase();
+  if (!db) return EMPTY_COLLECTIONS;
+  return collect(
+    await Promise.all([
+      db.from("members").select(MEMBER_COLUMNS).eq("is_demo", true).limit(100),
+      db.from("customer_profiles").select(PROFILE_COLUMNS).eq("is_demo", true).limit(100),
+      db.from("intake_sessions").select(withMessages ? SESSION_COLUMNS_WITH_MESSAGES : SESSION_COLUMNS).eq("is_demo", true).limit(200),
+      db.from("quotes").select(QUOTE_COLUMNS).eq("is_demo", true).limit(200),
+      db.from("work_orders").select(ORDER_COLUMNS).eq("is_demo", true).limit(300),
+      db.from("customer_followups").select(FOLLOWUP_COLUMNS).eq("is_demo", true).limit(200),
+    ])
+  );
+}
+
+// React.cache：同一次請求（RSC 渲染）裡重複呼叫只查一次——例如追蹤回訪頁同時要回訪清單與客戶清單，
+// 以前各自整包撈一次。這個 API 只存在於 Next 伺服器端的 React（react-server）；route handler 沒有請求層級
+// 的快取範圍、純 Node（單元測試）根本沒有這個 API，都退化成直接呼叫（所以 AI 小幫手自己只載一次再共用）。
+// 刻意不做跨請求快取（unstable_cache）：同事剛改的 Demo 資料換頁就要看得到。
+const perRequest: <T extends (...args: any[]) => any>(fn: T) => T =
+  typeof React.cache === "function" ? React.cache : (fn) => fn;
+
+const loadDemoCollectionsCached = perRequest((withMessages: boolean) => fetchDemoCollections(withMessages));
+
+/** 全部 Demo 資料（同一次請求只查一次）。withMessages：要不要連對話 jsonb 一起撈（只有服務知識庫需要）。 */
+export function loadDemoCollections(withMessages = false): Promise<DemoCollections> {
+  return loadDemoCollectionsCached(withMessages);
+}
+
+const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** 單一 Demo 客戶詳情頁：六張表都只查這位客戶的列（以前整包撈全部客戶再 find 一位）。 */
+async function fetchDemoCustomerCollections(memberId: string): Promise<DemoCollections> {
+  const db = createAdminSupabase();
+  if (!db) return EMPTY_COLLECTIONS;
+  return collect(
+    await Promise.all([
+      db.from("members").select(MEMBER_COLUMNS).eq("is_demo", true).eq("id", memberId).limit(1),
+      db.from("customer_profiles").select(PROFILE_COLUMNS).eq("is_demo", true).eq("member_id", memberId).limit(1),
+      db.from("intake_sessions").select(SESSION_COLUMNS_WITH_MESSAGES).eq("is_demo", true).eq("member_id", memberId).limit(200),
+      db.from("quotes").select(QUOTE_COLUMNS).eq("is_demo", true).eq("member_id", memberId).limit(200),
+      db.from("work_orders").select(ORDER_COLUMNS).eq("is_demo", true).eq("member_id", memberId).limit(300),
+      db.from("customer_followups").select(FOLLOWUP_COLUMNS).eq("is_demo", true).eq("member_id", memberId).limit(200),
+    ])
+  );
 }
 
 function toFollowup(row: any, member?: MemberRow): CustomerFollowup {
@@ -202,8 +256,9 @@ function buildCustomers(data: DemoCollections): KnowledgeCustomer[] {
   });
 }
 
-export async function listKnowledgeCustomers(filters: CustomerFilters = {}): Promise<KnowledgeCustomer[]> {
-  const customers = buildCustomers(await loadDemoCollections());
+/** 客戶列表（依最近互動排序）＋篩選——純函式，吃已載好的 Demo 資料。 */
+export function filterKnowledgeCustomers(data: DemoCollections, filters: CustomerFilters = {}): KnowledgeCustomer[] {
+  const customers = buildCustomers(data);
   return sortCustomersByLastInteraction(customers
     .filter((customer) => matchesCustomerFilters({
       name: customer.name,
@@ -216,8 +271,13 @@ export async function listKnowledgeCustomers(filters: CustomerFilters = {}): Pro
     }, filters)));
 }
 
+export async function listKnowledgeCustomers(filters: CustomerFilters = {}): Promise<KnowledgeCustomer[]> {
+  return filterKnowledgeCustomers(await loadDemoCollections(), filters);
+}
+
 export async function getKnowledgeCustomer(id: string): Promise<KnowledgeCustomerDetail | null> {
-  const data = await loadDemoCollections();
+  if (!UUID_SHAPE.test(id)) return null;
+  const data = await fetchDemoCustomerCollections(id);
   const customer = buildCustomers(data).find((item) => item.id === id);
   if (!customer) return null;
   const member = data.members.find((item) => item.id === id);
@@ -243,8 +303,8 @@ function countBy(values: string[]): Array<{ label: string; value: number }> {
   return [...counts].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
 }
 
-export async function getDemoDashboard(now = new Date()): Promise<DemoDashboard> {
-  const data = await loadDemoCollections();
+/** 營運總覽 KPI／圖表——純函式，吃已載好的 Demo 資料。 */
+export function buildDemoDashboard(data: DemoCollections, now = new Date()): DemoDashboard {
   const customers = buildCustomers(data);
   const membersById = new Map(data.members.map((row) => [row.id, row]));
   const followups = data.followups.map((row) => toFollowup(row, membersById.get(row.member_id)));
@@ -267,14 +327,25 @@ export async function getDemoDashboard(now = new Date()): Promise<DemoDashboard>
   };
 }
 
-export async function listFollowups(): Promise<CustomerFollowup[]> {
-  const data = await loadDemoCollections();
+export async function getDemoDashboard(now = new Date()): Promise<DemoDashboard> {
+  return buildDemoDashboard(await loadDemoCollections(), now);
+}
+
+/** 回訪清單（依到期時間排序）——純函式，吃已載好的 Demo 資料。 */
+export function buildFollowupList(data: DemoCollections): CustomerFollowup[] {
   const members = new Map(data.members.map((row) => [row.id, row]));
   return data.followups.map((row) => toFollowup(row, members.get(row.member_id))).sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
 }
 
-export async function searchServiceKnowledge(query = "", type = "all"): Promise<ServiceKnowledgeResult[]> {
-  const data = await loadDemoCollections();
+export async function listFollowups(): Promise<CustomerFollowup[]> {
+  return buildFollowupList(await loadDemoCollections());
+}
+
+/**
+ * 服務知識庫搜尋——純函式，吃已載好的 Demo 資料。比對一律用全文（對話摘錄是整段訊息串起來）；
+ * 要顯示時再由頁面截短（見 truncateExcerpt）。資料沒帶 messages 時對話摘錄為空字串。
+ */
+export function buildServiceKnowledge(data: DemoCollections, query = "", type = "all"): ServiceKnowledgeResult[] {
   const members = new Map(data.members.map((row) => [row.id, row]));
   const results: ServiceKnowledgeResult[] = [];
   if (type === "all" || type === "conversation") {
@@ -301,6 +372,12 @@ export async function searchServiceKnowledge(query = "", type = "all"): Promise<
     .filter((row) => !needle || [row.customerName, row.company, row.title, row.excerpt, row.status].some((value) => String(value ?? "").toLocaleLowerCase("zh-TW").includes(needle)))
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
     .slice(0, 100);
+}
+
+export async function searchServiceKnowledge(query = "", type = "all"): Promise<ServiceKnowledgeResult[]> {
+  // 只有要列出對話紀錄時才撈 messages（對話摘錄與全文比對都靠它）。
+  const withMessages = type === "all" || type === "conversation";
+  return buildServiceKnowledge(await loadDemoCollections(withMessages), query, type);
 }
 
 export async function updateCustomerProfile(memberId: string, patch: Record<string, unknown>): Promise<CustomerProfile | null> {

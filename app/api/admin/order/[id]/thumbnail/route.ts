@@ -46,7 +46,9 @@ function detectAllowedType(bytes: Uint8Array): "jpeg" | "png" | "webp" | "pdf" |
 /**
  * POST multipart({ file, kind: "thumbnail" | "diagram" }) → 人工補圖（自動管線失敗或
  * .ai 打不開時的退路）。統一走 renderToThumbnailJpeg 轉成 JPEG 存進私有 bucket，
- * 路徑刻意含 "-manual-"：lib/thumbnail/generate.ts 的自動管線看到就會跳過、不會覆蓋人工補的圖。
+ * 路徑刻意含 "-manual-"（自動縮圖是 "-auto-<lease>"，兩者永不共用 storage 路徑）。
+ * 自動管線（lib/thumbnail/job.ts）只在 thumbnail_path 仍為空、狀態沒變時才寫回：人工補的圖一旦寫入，
+ * 還在跑的自動產圖晚完成也不會覆蓋（它的結果作廢、自己上傳的檔會被刪掉）。
  *
  * kind=diagram 只寫 diagram_path，不動 thumbnail_status——那個欄位只描述「自動縮圖管線」的狀態，
  * 補一張加工示意圖跟縮圖有沒有產出是兩件事，混在一起會讓 ensureThumbnail() 誤判成「已處理」而不再重試。
@@ -96,7 +98,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ ok: false, error: "invalid_signature" }, { status: 400 });
   }
 
-  const jpeg = await renderToThumbnailJpeg(bytes);
+  let jpeg: Buffer | null;
+  try {
+    jpeg = await renderToThumbnailJpeg(bytes);
+  } catch (err) {
+    // PDFium 引擎出錯（init 失敗／wasm 崩潰，渲染器已自動換新實例）：暫時性失敗，請同事再傳一次
+    console.error("[admin/order/thumbnail] render failed:", err);
+    return NextResponse.json({ ok: false, error: "render_failed" }, { status: 503 });
+  }
   if (!jpeg) {
     return NextResponse.json({ ok: false, error: "render_failed" }, { status: 422 });
   }

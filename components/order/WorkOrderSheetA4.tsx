@@ -1,10 +1,10 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { WorkOrder, WorkOrderItem } from "@/lib/workOrders";
-import { getWorkOrderItems } from "@/lib/workOrders";
-import { signedPrintUrl } from "@/lib/storage";
 import { STATION_LABELS } from "@/lib/workOrder/barcode";
 import { rocFromYmd, rocFromIso } from "./WorkOrderSheet";
 import StationBarcode from "./StationBarcode";
+import ThumbnailAutoGenerate from "./ThumbnailAutoGenerate";
+import { thumbnailPlaceholderKind } from "@/lib/thumbnail/policy";
 
 // ── 儲存格語法：對照客戶實體 A4 工單（9 欄 A-I × 45 列），可逐格對 xlsx diff。──
 // CSS 對應的具名 grid line 見 globals.css `.wo-a4 .wo-grid`：cA..cI + 結尾 cEnd。
@@ -101,11 +101,11 @@ function displaySingleQty(order: WorkOrder): string {
   return "";
 }
 
-function thumbnailPlaceholderText(order: WorkOrder): string {
-  if (order.thumbnail_status === "failed") return "縮圖產生失敗";
-  if (order.thumbnail_status === "unsupported") return "此格式不支援自動縮圖";
-  return "縮圖產生中";
-}
+const THUMBNAIL_PLACEHOLDER_TEXT = {
+  failed: "縮圖產生失敗",
+  unsupported: "此格式不支援自動縮圖",
+  pending: "縮圖產生中",
+} as const;
 
 /** 加工說明／配件明細：固定印 5 列，超過 5 筆時前 4 列 + 第 5 列「其他 N 項」。 */
 function ItemRows({ items, startRow }: { items: WorkOrderItem[]; startRow: number }) {
@@ -136,13 +136,26 @@ function ItemRows({ items, startRow }: { items: WorkOrderItem[]; startRow: numbe
   return <>{nodes}</>;
 }
 
-export default async function WorkOrderSheetA4({ order }: { order: WorkOrder }) {
-  const [processingItems, accessoryItems, thumbnailUrl, diagramUrl] = await Promise.all([
-    getWorkOrderItems(order.id, "processing"),
-    getWorkOrderItems(order.id, "accessory"),
-    order.thumbnail_path ? signedPrintUrl(order.thumbnail_path, 600) : Promise.resolve(null),
-    order.diagram_path ? signedPrintUrl(order.diagram_path, 600) : Promise.resolve(null),
-  ]);
+/**
+ * 資料一律由工單詳情頁傳入（明細、已簽好的縮圖／示意圖 URL），這裡不再自己查 DB、不再自己簽 URL：
+ * 以前 A4 跟編輯表單各查一次明細、各簽一次 URL（簽名 URL 每次都不同 → 同一張圖瀏覽器下載兩次）。
+ * autoGenerateThumbnail：縮圖還沒產、而且規則允許自動產時為 true，縮圖格改掛 ThumbnailAutoGenerate。
+ */
+export default function WorkOrderSheetA4({
+  order,
+  processingItems,
+  accessoryItems,
+  thumbnailUrl,
+  diagramUrl,
+  autoGenerateThumbnail = false,
+}: {
+  order: WorkOrder;
+  processingItems: WorkOrderItem[];
+  accessoryItems: WorkOrderItem[];
+  thumbnailUrl: string | null;
+  diagramUrl: string | null;
+  autoGenerateThumbnail?: boolean;
+}) {
 
   const size = order.size_w && order.size_h ? `${order.size_w}*${order.size_h}${order.size_unit ?? "cm"}`.toUpperCase() : "";
   const customerFull = order.customer_name
@@ -327,8 +340,11 @@ export default async function WorkOrderSheetA4({ order }: { order: WorkOrder }) 
             {thumbnailUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={thumbnailUrl} alt="印刷檔縮圖" />
+            ) : autoGenerateThumbnail ? (
+              <ThumbnailAutoGenerate orderId={order.id} />
             ) : (
-              <span className="wo-img--empty">{thumbnailPlaceholderText(order)}</span>
+              // wo-img--hint：提示文字只給螢幕看，列印時隱藏（縮圖格印成空白框）
+              <span className="wo-img--empty wo-img--hint">{THUMBNAIL_PLACEHOLDER_TEXT[thumbnailPlaceholderKind(order)]}</span>
             )}
           </Box>
           <Box at="E32:F45" b className="wo-img">

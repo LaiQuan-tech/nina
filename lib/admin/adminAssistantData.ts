@@ -6,10 +6,11 @@ import {
   type AdminAssistantSnapshot,
 } from "./adminAssistant";
 import {
-  getDemoDashboard,
-  listFollowups,
-  listKnowledgeCustomers,
-  searchServiceKnowledge,
+  buildDemoDashboard,
+  buildFollowupList,
+  buildServiceKnowledge,
+  filterKnowledgeCustomers,
+  loadDemoCollections,
 } from "./customerKnowledge";
 import { bucketFollowups } from "./customerKnowledgeView";
 
@@ -26,12 +27,14 @@ export async function buildAdminAssistantReport(query: string): Promise<AdminAss
   const intent = classifyAdminAssistantIntent(query);
   const customerFilters = intent === "customers" && /vip/i.test(query) ? { customerTier: "vip" } : {};
   const recordType = intent === "quotes" ? "quote" : intent === "orders" ? "order" : "all";
-  const [dashboard, customers, allFollowups, records] = await Promise.all([
-    getDemoDashboard(),
-    listKnowledgeCustomers(customerFilters),
-    listFollowups(),
-    searchServiceKnowledge("", recordType),
-  ]);
+  // 每題只載一次 Demo 資料、四個視角共用（以前四支函式各撈一整包＝每題 24 個查詢；這裡跑在 route handler，
+  // 不在 RSC 渲染裡，不能指望 React cache 去重）。不撈對話 jsonb：小幫手只用報價／工單的摘錄，
+  // 對話紀錄在下面就被濾掉了，而且查詢字串是空的、不需要全文比對。
+  const data = await loadDemoCollections(false);
+  const dashboard = buildDemoDashboard(data);
+  const customers = filterKnowledgeCustomers(data, customerFilters);
+  const allFollowups = buildFollowupList(data);
+  const records = buildServiceKnowledge(data, "", recordType);
 
   let followups = allFollowups.filter((item) => item.status === "open");
   const followupScope = classifyFollowupTimeScope(query);
