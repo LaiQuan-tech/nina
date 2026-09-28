@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { STATION_LABELS, type StationKey } from "@/lib/workOrder/barcode";
 import type { RecentScanRow } from "@/lib/workOrders";
 
@@ -78,7 +78,6 @@ export default function ScanStation({
   adminLabel: string;
   initialRecent: RecentScanRow[];
 }) {
-  const router = useRouter();
   const [rows, setRows] = useState<ScanRow[]>(() => initialRecent.map(toInitialRow));
   const [value, setValue] = useState("");
   const [manualMode, setManualMode] = useState(false);
@@ -150,8 +149,29 @@ export default function ScanStation({
     });
   }
 
+  // 後台改成 client 端換頁後，離開掃描站是元件卸載而不是整頁重載：要自己停掉閒置送出計時器、關掉 AudioContext，
+  // 並讓卸載後才回來的掃描結果不再嗶聲／震動（否則會在別頁響，還會再開一個關不掉的 AudioContext）。
+  const unmountedRef = useRef(false);
+  useEffect(() => {
+    unmountedRef.current = false;
+    return () => {
+      unmountedRef.current = true;
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+      const ctx = audioCtxRef.current;
+      audioCtxRef.current = null;
+      try {
+        ctx?.close().catch(() => {});
+      } catch {
+        /* 舊版 WebKit 的 close() 可能不回 Promise；關不掉就算了，不能讓卸載流程丟例外 */
+      }
+    };
+  }, []);
+
   function ensureAudio(): AudioContext | null {
-    if (typeof window === "undefined") return null;
+    if (typeof window === "undefined" || unmountedRef.current) return null;
     if (!audioCtxRef.current) {
       const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!Ctx) return null;
@@ -177,10 +197,12 @@ export default function ScanStation({
   }
 
   function feedbackSuccess() {
+    if (unmountedRef.current) return;
     beep(880);
     vibrate(30);
   }
   function feedbackFailure() {
+    if (unmountedRef.current) return;
     beep(220);
     beep(220, 0.16);
     vibrate([40, 60, 40]);
@@ -279,15 +301,16 @@ export default function ScanStation({
 
   async function logout() {
     await fetch("/api/admin/login", { method: "DELETE" }).catch(() => {});
-    router.replace("/admin/login");
+    // 整頁跳轉而非 router.replace：清掉 client router 快取，登出後按「上一頁」才不會從記憶體還原後台畫面
+    window.location.replace("/admin/login");
   }
 
   return (
     <div className="scan-page">
       <header className="scan-header">
-        <a href="/admin" className="scan-back">
+        <Link href="/admin" className="scan-back">
           ← 後台
-        </a>
+        </Link>
         <span className="scan-whoami">{adminLabel}</span>
         <button type="button" className="scan-logout-btn" onClick={logout}>
           登出

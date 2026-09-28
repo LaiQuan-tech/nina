@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import AdminAiAssistant from "@/components/admin/AdminAiAssistant";
+import { reloadIfCurrentPage } from "@/components/admin/reloadIfCurrentPage";
 
 const NAV = [
   { href: "/admin", label: "總覽", ic: "▦" },
@@ -19,17 +21,17 @@ const NAV = [
 // 後台外殼：桌機左側固定功能列；手機收成抽屜（頂端漢堡開關）。
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
 
-  // 換頁自動關抽屜
+  // 換頁自動關抽屜（外殼現在放在 layout、換頁不會重新掛載，所以要靠這裡關）
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
   async function logout() {
     await fetch("/api/admin/login", { method: "DELETE" }).catch(() => {});
-    router.replace("/admin/login");
+    // 整頁跳轉而非 router.replace：清掉 client router 快取，登出後按「上一頁」才不會從記憶體還原後台畫面
+    window.location.replace("/admin/login");
   }
 
   const current = NAV.find((n) => (n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href)));
@@ -57,12 +59,20 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           {NAV.map((n) => {
             const active = n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href);
             return (
-              <a key={n.href} href={n.href} data-active={active ? "true" : "false"}>
+              <Link
+                key={n.href}
+                href={n.href}
+                data-active={active ? "true" : "false"}
+                onClick={(e) => {
+                  setOpen(false); // 點「目前這一頁」時 pathname 不變，上面的 effect 不會觸發，要在這裡關抽屜
+                  reloadIfCurrentPage(e, n.href, pathname); // 再點一次目前所在的選單＝要重新整理，照舊整頁重載
+                }}
+              >
                 <span className="ic" aria-hidden="true">
                   {n.ic}
                 </span>
                 {n.label}
-              </a>
+              </Link>
             );
           })}
         </nav>

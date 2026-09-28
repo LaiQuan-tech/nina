@@ -10,16 +10,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
+    // Google Fonts 只給前台用，放在 app/(site)/layout.tsx；後台不載（工單 A4 另見 components/order/A4FontLoader.tsx）。
     <html lang="zh-Hant">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* Google Fonts 對 CJK 有 unicode-range 分片，未用到的字重／字元不會下載 */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
-        />
-      </head>
       <body>{children}</body>
     </html>
   );

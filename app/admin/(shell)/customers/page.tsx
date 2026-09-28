@@ -1,4 +1,3 @@
-import AdminShell from "@/components/admin/AdminShell";
 import CustomerKnowledgeList from "@/components/admin/CustomerKnowledgeList";
 import { listKnowledgeCustomers } from "@/lib/admin/customerKnowledge";
 
@@ -15,19 +14,18 @@ export default async function CustomersPage({ searchParams }: { searchParams?: {
     status: searchParams?.status,
   });
   return (
-    <AdminShell>
-      <main className="adm-crm-page">
-        <header className="adm-crm-title"><div><div className="adm-demo-tag">CUSTOMER MEMORY</div><h1>客戶知識庫</h1><p>搜尋客戶身份、偏好、服務摘要與歷史脈絡。</p></div><span className="adm-result-count">{customers.length} 位客戶</span></header>
-        <form className="adm-filter-bar" action="/admin/customers">
-          <label><span>搜尋</span><input name="q" defaultValue={searchParams?.q} placeholder="公司、聯絡人、手機或標籤" /></label>
-          <label><span>客戶等級</span><select name="tier" defaultValue={searchParams?.tier || "all"}><option value="all">全部</option><option value="vip">高價值</option><option value="growth">成長</option><option value="standard">一般</option></select></label>
-          <label><span>產業</span><select name="industry" defaultValue={searchParams?.industry || "all"}><option value="all">全部</option>{INDUSTRIES.map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label><span>狀態</span><select name="status" defaultValue={searchParams?.status || "all"}><option value="all">全部</option><option value="active">啟用</option><option value="guest">訪客</option></select></label>
-          <button type="submit">套用篩選</button>
-          <a href="/admin/customers">清除</a>
-        </form>
-        <CustomerKnowledgeList customers={customers} />
-      </main>
-    </AdminShell>
+    <main className="adm-crm-page">
+      <header className="adm-crm-title"><div><div className="adm-demo-tag">CUSTOMER MEMORY</div><h1>客戶知識庫</h1><p>搜尋客戶身份、偏好、服務摘要與歷史脈絡。</p></div><span className="adm-result-count">{customers.length} 位客戶</span></header>
+      {/* key 隨網址參數變：只改 search params 的 client 換頁（分頁、上一頁／下一頁、AI 小幫手連結）不會重掛頁面元件，select 的 defaultValue 變了 React 也不會重設，靠 key 讓表單跟著網址重建 */}
+      <form key={JSON.stringify(searchParams ?? {})} className="adm-filter-bar" action="/admin/customers">
+        <label><span>搜尋</span><input name="q" defaultValue={searchParams?.q} placeholder="公司、聯絡人、手機或標籤" /></label>
+        <label><span>客戶等級</span><select name="tier" defaultValue={searchParams?.tier || "all"}><option value="all">全部</option><option value="vip">高價值</option><option value="growth">成長</option><option value="standard">一般</option></select></label>
+        <label><span>產業</span><select name="industry" defaultValue={searchParams?.industry || "all"}><option value="all">全部</option>{INDUSTRIES.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label><span>狀態</span><select name="status" defaultValue={searchParams?.status || "all"}><option value="all">全部</option><option value="active">啟用</option><option value="guest">訪客</option></select></label>
+        <button type="submit">套用篩選</button>
+        <a href="/admin/customers">清除</a>
+      </form>
+      <CustomerKnowledgeList customers={customers} />
+    </main>
   );
 }

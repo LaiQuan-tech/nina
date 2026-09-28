@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { DemoDashboard as DashboardData } from "@/lib/admin/customerKnowledge";
 
 function StatCard({ label, value, note, tone }: { label: string; value: number; note: string; tone?: "warn" }) {
@@ -42,7 +43,7 @@ export default function DemoDashboard({ data }: { data: DashboardData }) {
           <h1>營運總覽</h1>
           <p>把客戶、報價、稿件、工單與回訪整合成一張即時營運地圖。</p>
         </div>
-        <a className="adm-primary-link" href="/admin/customers">開啟客戶知識庫</a>
+        <Link className="adm-primary-link" href="/admin/customers">開啟客戶知識庫</Link>
       </header>
 
       <section className="adm-kpi-grid" aria-label="營運關鍵指標">
@@ -65,25 +66,25 @@ export default function DemoDashboard({ data }: { data: DashboardData }) {
         <BarList title="熱門材質" items={data.materialCounts} />
 
         <section className="adm-panel adm-wide-panel">
-          <div className="adm-panel-head"><h2>優先回訪</h2><a href="/admin/followups">查看全部</a></div>
+          <div className="adm-panel-head"><h2>優先回訪</h2><Link href="/admin/followups">查看全部</Link></div>
           <div className="adm-compact-list">
             {data.upcomingFollowups.map((item) => (
-              <a href={`/admin/customers/${item.memberId}`} key={item.id}>
+              <Link href={`/admin/customers/${item.memberId}`} key={item.id}>
                 <span><b>{item.company || item.customerName}</b><small>{item.title}</small></span>
                 <em data-priority={item.priority}>{dateLabel(item.dueAt)}</em>
-              </a>
+              </Link>
             ))}
           </div>
         </section>
 
         <section className="adm-panel adm-wide-panel">
-          <div className="adm-panel-head"><h2>最近互動客戶</h2><a href="/admin/customers">客戶列表</a></div>
+          <div className="adm-panel-head"><h2>最近互動客戶</h2><Link href="/admin/customers">客戶列表</Link></div>
           <div className="adm-compact-list">
             {data.recentCustomers.map((customer) => (
-              <a href={`/admin/customers/${customer.id}`} key={customer.id}>
+              <Link href={`/admin/customers/${customer.id}`} key={customer.id}>
                 <span><b>{customer.company || customer.name}</b><small>{customer.profile.tags.slice(0, 2).join(" · ")}</small></span>
                 <em>{customer.orderCount} 工單</em>
-              </a>
+              </Link>
             ))}
           </div>
         </section>

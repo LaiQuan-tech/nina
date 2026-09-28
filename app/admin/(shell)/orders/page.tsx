@@ -1,4 +1,4 @@
-import AdminShell from "@/components/admin/AdminShell";
+import Link from "next/link";
 import { listWorkOrders, type WorkOrderListRow } from "@/lib/workOrders";
 import { STATION_LABELS, type StationKey } from "@/lib/workOrder/barcode";
 import { progressLabel } from "@/lib/members";
@@ -109,7 +109,7 @@ function OrderRow({ order, today }: { order: WorkOrderListRow; today: string }) 
   const overdue = order.status !== "done" && !!order.delivery_date && order.delivery_date < today;
 
   return (
-    <a href={`/admin/orders/${order.id}`} className="adm-row" style={{ gridTemplateColumns: COLS }}>
+    <Link href={`/admin/orders/${order.id}`} className="adm-row" style={{ gridTemplateColumns: COLS }}>
       <div>
         <span className="adm-cell-label">工單編號</span>
         <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontWeight: 700 }}>
@@ -143,7 +143,7 @@ function OrderRow({ order, today }: { order: WorkOrderListRow; today: string }) 
         <span className="adm-cell-label">接單人員</span>
         {order.receiver || "—"}
       </div>
-    </a>
+    </Link>
   );
 }
 
@@ -166,93 +166,92 @@ export default async function OrdersPage({ searchParams }: { searchParams?: Sear
   const today = todayInTaipei();
 
   return (
-    <AdminShell>
-      <main style={{ maxWidth: 1240, margin: "0 auto", padding: "28px 20px 60px" }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 6px" }}>所有工單</h1>
-        <p style={{ fontSize: 13.5, color: "#6b7280", margin: "0 0 18px" }}>
-          共 {result.total} 筆，依接單日新到舊排序。
-        </p>
+    <main style={{ maxWidth: 1240, margin: "0 auto", padding: "28px 20px 60px" }}>
+      <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 6px" }}>所有工單</h1>
+      <p style={{ fontSize: 13.5, color: "#6b7280", margin: "0 0 18px" }}>
+        共 {result.total} 筆，依接單日新到舊排序。
+      </p>
 
-        <form className="adm-filter-bar adm-filter-wide" action="/admin/orders">
-          <label>
-            <span>搜尋</span>
-            <input name="q" defaultValue={sp.q} placeholder="工單編號、客戶、聯絡人、設計檔名、商品" />
-          </label>
-          <label>
-            <span>狀態</span>
-            <select name="status" defaultValue={sp.status || "all"}>
-              <option value="all">全部</option>
-              <option value="open">已收件</option>
-              <option value="in_progress">製作中</option>
-              <option value="done">已完成</option>
-            </select>
-          </label>
-          <label>
-            <span>站別</span>
-            <select name="station" defaultValue={sp.station || "all"}>
-              <option value="all">全部</option>
-              {STATION_ENTRIES.map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>接單日（起）</span>
-            <input type="date" name="from" defaultValue={sp.from} />
-          </label>
-          <label>
-            <span>接單日（迄）</span>
-            <input type="date" name="to" defaultValue={sp.to} />
-          </label>
-          <label className="adm-filter-check">
-            <input type="checkbox" name="unmatched" value="1" defaultChecked={sp.unmatched === "1"} />
-            <span>未比對商品</span>
-          </label>
-          <button type="submit">套用篩選</button>
-          <a href="/admin/orders">清除</a>
-        </form>
+      {/* key 隨網址參數變：只改 search params 的 client 換頁（分頁、上一頁／下一頁、AI 小幫手連結）不會重掛頁面元件，select 的 defaultValue 變了 React 也不會重設，靠 key 讓表單跟著網址重建 */}
+      <form key={JSON.stringify(sp)} className="adm-filter-bar adm-filter-wide" action="/admin/orders">
+        <label>
+          <span>搜尋</span>
+          <input name="q" defaultValue={sp.q} placeholder="工單編號、客戶、聯絡人、設計檔名、商品" />
+        </label>
+        <label>
+          <span>狀態</span>
+          <select name="status" defaultValue={sp.status || "all"}>
+            <option value="all">全部</option>
+            <option value="open">已收件</option>
+            <option value="in_progress">製作中</option>
+            <option value="done">已完成</option>
+          </select>
+        </label>
+        <label>
+          <span>站別</span>
+          <select name="station" defaultValue={sp.station || "all"}>
+            <option value="all">全部</option>
+            {STATION_ENTRIES.map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>接單日（起）</span>
+          <input type="date" name="from" defaultValue={sp.from} />
+        </label>
+        <label>
+          <span>接單日（迄）</span>
+          <input type="date" name="to" defaultValue={sp.to} />
+        </label>
+        <label className="adm-filter-check">
+          <input type="checkbox" name="unmatched" value="1" defaultChecked={sp.unmatched === "1"} />
+          <span>未比對商品</span>
+        </label>
+        <button type="submit">套用篩選</button>
+        <a href="/admin/orders">清除</a>
+      </form>
 
-        {result.rows.length === 0 ? (
-          <div className="adm-empty">找不到符合條件的工單。</div>
-        ) : (
-          <>
-            <div className="adm-table">
-              <div className="adm-thead" style={{ gridTemplateColumns: COLS }}>
-                <div>工單編號</div>
-                <div>客戶</div>
-                <div>商品</div>
-                <div>站別・狀態</div>
-                <div>接單日</div>
-                <div>交貨日</div>
-                <div>接單人員</div>
-              </div>
-              {result.rows.map((order) => (
-                <OrderRow key={order.id} order={order} today={today} />
-              ))}
+      {result.rows.length === 0 ? (
+        <div className="adm-empty">找不到符合條件的工單。</div>
+      ) : (
+        <>
+          <div className="adm-table">
+            <div className="adm-thead" style={{ gridTemplateColumns: COLS }}>
+              <div>工單編號</div>
+              <div>客戶</div>
+              <div>商品</div>
+              <div>站別・狀態</div>
+              <div>接單日</div>
+              <div>交貨日</div>
+              <div>接單人員</div>
             </div>
+            {result.rows.map((order) => (
+              <OrderRow key={order.id} order={order} today={today} />
+            ))}
+          </div>
 
-            {result.pageCount > 1 && (
-              <div className="adm-pager">
-                {result.page > 1 ? (
-                  <a href={pageHref(sp, result.page - 1)}>← 上一頁</a>
-                ) : (
-                  <span className="adm-pager-disabled">← 上一頁</span>
-                )}
-                <em>
-                  第 {result.page} / {result.pageCount} 頁，共 {result.total} 筆
-                </em>
-                {result.page < result.pageCount ? (
-                  <a href={pageHref(sp, result.page + 1)}>下一頁 →</a>
-                ) : (
-                  <span className="adm-pager-disabled">下一頁 →</span>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </main>
-    </AdminShell>
+          {result.pageCount > 1 && (
+            <div className="adm-pager">
+              {result.page > 1 ? (
+                <Link href={pageHref(sp, result.page - 1)}>← 上一頁</Link>
+              ) : (
+                <span className="adm-pager-disabled">← 上一頁</span>
+              )}
+              <em>
+                第 {result.page} / {result.pageCount} 頁，共 {result.total} 筆
+              </em>
+              {result.page < result.pageCount ? (
+                <Link href={pageHref(sp, result.page + 1)}>下一頁 →</Link>
+              ) : (
+                <span className="adm-pager-disabled">下一頁 →</span>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </main>
   );
 }

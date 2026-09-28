@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { reloadIfCurrentPage } from "@/components/admin/reloadIfCurrentPage";
 
 type AssistantLink = { label: string; href: string };
 type Message = {
@@ -20,6 +23,7 @@ const WELCOME: Message = {
 };
 
 export default function AdminAiAssistant() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [query, setQuery] = useState("");
@@ -135,7 +139,19 @@ export default function AdminAiAssistant() {
               )}
               {!!message.links?.length && (
                 <nav aria-label="相關資料">
-                  {message.links.map((link) => <a key={link.href + link.label} href={link.href}>{link.label}</a>)}
+                  {/* 外殼常駐後對話會跨頁保留：用 Link 換頁不整頁重載，點了就收起面板讓人看到目標頁；指向目前這頁時照舊整頁重載 */}
+                  {message.links.map((link) => (
+                    <Link
+                      key={link.href + link.label}
+                      href={link.href}
+                      onClick={(e) => {
+                        close();
+                        reloadIfCurrentPage(e, link.href, pathname);
+                      }}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
                 </nav>
               )}
             </article>

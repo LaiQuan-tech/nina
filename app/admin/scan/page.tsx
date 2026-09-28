@@ -5,7 +5,7 @@ import { getAdminById } from "@/lib/adminUsers";
 import { listRecentScans } from "@/lib/workOrders";
 import ScanStation from "@/components/admin/ScanStation";
 
-// 現場掃描站：故意不包 <AdminShell>——AdminShell 有 fixed 定位的 AI 助理 FAB，
+// 現場掃描站：故意放在 app/admin/(shell) 外、不套 AdminShell——AdminShell 有 fixed 定位的 AI 助理 FAB，
 // 手機直向畫面會被擋住一角，這頁自己畫一條極簡頁首就好（見 ScanStation.tsx）。
 export const dynamic = "force-dynamic";
 

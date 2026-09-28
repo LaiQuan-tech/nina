@@ -2,7 +2,7 @@ import { STATION_LABELS, type StationKey } from "@/lib/workOrder/barcode";
 import { progressLabel } from "@/lib/members";
 import type { WorkOrderEvent } from "@/lib/workOrders";
 
-// 跟 app/admin/orders/page.tsx 的 STATUS_STYLE 同一組配色，維持後台視覺一致。
+// 跟 app/admin/(shell)/orders/page.tsx 的 STATUS_STYLE 同一組配色，維持後台視覺一致。
 const STATUS_STYLE: Record<string, { bg: string; fg: string }> = {
   open: { bg: "#f1f5f9", fg: "#475569" },
   in_progress: { bg: "#fef3c7", fg: "#b45309" },

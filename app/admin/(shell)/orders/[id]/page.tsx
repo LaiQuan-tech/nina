@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import AdminShell from "@/components/admin/AdminShell";
 import { getWorkOrder, getWorkOrderItems, getShippingDefaults, isWorkOrderReadOnly, getWorkOrderEvents } from "@/lib/workOrders";
 import { listProcessingItems } from "@/lib/erp";
 import { signedPrintUrl } from "@/lib/storage";
 import WorkOrderSheet from "@/components/order/WorkOrderSheet";
 import WorkOrderSheetA4 from "@/components/order/WorkOrderSheetA4";
+import A4FontLoader from "@/components/order/A4FontLoader";
 import OrderEditForm from "@/components/order/OrderEditForm";
 import PrintButton from "@/components/order/PrintButton";
 import FtpStatusCard from "@/components/order/FtpStatusCard";
@@ -51,57 +52,63 @@ export default async function AdminOrderPage({
       })();
 
   return (
-    <AdminShell>
-      <main style={{ padding: "28px 16px 60px" }}>
-        <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <a href={backHref} style={{ fontSize: 14, fontWeight: 600 }}>
-            ← 回後台
-          </a>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {readOnly ? (
-              <span style={{ border: "1px solid #f3df9b", borderRadius: 999, padding: "7px 12px", background: "#fff8dc", color: "#765b00", fontSize: 12, fontWeight: 700 }}>
-                Demo 資料 · 僅供檢視
-              </span>
-            ) : (
-              <a
-                href={`/api/admin/order/${order.id}/download`}
-                style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: "9px 16px", background: "#fff", color: "#1c1c1e", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
-              >
-                ⬇️ 下載印刷檔
-              </a>
-            )}
-            <PrintButton />
-          </div>
+    <main style={{ padding: "28px 16px 60px" }}>
+      <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <Link href={backHref} style={{ fontSize: 14, fontWeight: 600 }}>
+          ← 回後台
+        </Link>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {readOnly ? (
+            <span style={{ border: "1px solid #f3df9b", borderRadius: 999, padding: "7px 12px", background: "#fff8dc", color: "#765b00", fontSize: 12, fontWeight: 700 }}>
+              Demo 資料 · 僅供檢視
+            </span>
+          ) : (
+            <a
+              href={`/api/admin/order/${order.id}/download`}
+              style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: "9px 16px", background: "#fff", color: "#1c1c1e", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+            >
+              ⬇️ 下載印刷檔
+            </a>
+          )}
+          <PrintButton />
         </div>
+      </div>
 
-        {useLegacy ? <WorkOrderSheet order={order} /> : <WorkOrderSheetA4 order={order} />}
-        {!readOnly && (
-          <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px" }}>
-            <FtpStatusCard
-              orderId={order.id}
-              status={order.ftp_status}
-              lastError={typeof order.ftp_meta?.last_error === "string" ? (order.ftp_meta.last_error as string) : null}
-            />
-          </div>
-        )}
-        {!readOnly && editData && (
-          <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px" }}>
-            <StationEventsCard station={order.station} status={order.status} events={editData.events} />
-          </div>
-        )}
-        {!readOnly && editData && (
-          <OrderEditForm
-            order={order}
-            processingItems={editData.processingItems}
-            accessoryItems={editData.accessoryItems}
-            erpOptions={editData.erpOptions}
-            shippingDefaults={editData.shippingDefaults}
-            thumbnailUrl={editData.thumbnailUrl}
-            diagramUrl={editData.diagramUrl}
-            className="no-print"
+      {useLegacy ? (
+        <WorkOrderSheet order={order} />
+      ) : (
+        <>
+          {/* A4 版面以 Noto Sans TC 字寬校準：只在這頁、掛載後才載字型（不擋渲染），列印前 PrintButton 會等它到位 */}
+          <A4FontLoader />
+          <WorkOrderSheetA4 order={order} />
+        </>
+      )}
+      {!readOnly && (
+        <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px" }}>
+          <FtpStatusCard
+            orderId={order.id}
+            status={order.ftp_status}
+            lastError={typeof order.ftp_meta?.last_error === "string" ? (order.ftp_meta.last_error as string) : null}
           />
-        )}
-      </main>
-    </AdminShell>
+        </div>
+      )}
+      {!readOnly && editData && (
+        <div className="no-print" style={{ maxWidth: 820, margin: "0 auto 18px" }}>
+          <StationEventsCard station={order.station} status={order.status} events={editData.events} />
+        </div>
+      )}
+      {!readOnly && editData && (
+        <OrderEditForm
+          order={order}
+          processingItems={editData.processingItems}
+          accessoryItems={editData.accessoryItems}
+          erpOptions={editData.erpOptions}
+          shippingDefaults={editData.shippingDefaults}
+          thumbnailUrl={editData.thumbnailUrl}
+          diagramUrl={editData.diagramUrl}
+          className="no-print"
+        />
+      )}
+    </main>
   );
 }

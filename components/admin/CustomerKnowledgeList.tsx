@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { KnowledgeCustomer } from "@/lib/admin/customerKnowledge";
 
 const TIER: Record<string, string> = { vip: "高價值", growth: "成長", standard: "一般" };
@@ -13,7 +14,7 @@ export default function CustomerKnowledgeList({ customers }: { customers: Knowle
   return (
     <div className="adm-customer-grid">
       {customers.map((customer) => (
-        <a className="adm-customer-card" href={`/admin/customers/${customer.id}`} key={customer.id}>
+        <Link className="adm-customer-card" href={`/admin/customers/${customer.id}`} key={customer.id}>
           <div className="adm-customer-card-top">
             <span className="adm-demo-tag">DEMO</span>
             <em data-tier={customer.profile.customer_tier}>{TIER[customer.profile.customer_tier]}</em>
@@ -27,7 +28,7 @@ export default function CustomerKnowledgeList({ customers }: { customers: Knowle
             <div><dt>報價</dt><dd>{customer.quoteCount}</dd></div>
             <div><dt>待回訪</dt><dd className={customer.openFollowupCount ? "attention" : ""}>{customer.openFollowupCount}</dd></div>
           </dl>
-        </a>
+        </Link>
       ))}
     </div>
   );

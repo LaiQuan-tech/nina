@@ -1,10 +1,9 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +24,9 @@ function LoginForm() {
       const data = await res.json();
       if (data.ok) {
         const next = params.get("next");
-        router.replace(next && next.startsWith("/admin") ? next : "/admin");
+        // 整頁跳轉而非 router.replace：session 過期時 Link 預取會把「被導去登入頁」的結果快取在目標網址上，
+        // 沿用 client router 會又被帶回登入頁；整頁載入同時清掉舊的 router 快取。
+        window.location.replace(next && next.startsWith("/admin") ? next : "/admin");
       } else {
         setError(data.message || "登入失敗，請稍後再試。");
       }
