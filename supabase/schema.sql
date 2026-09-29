@@ -48,6 +48,10 @@ create table if not exists work_orders (
 );
 
 create index if not exists work_orders_created_idx on work_orders (created_at desc);
+-- 直傳收稿（/api/upload/complete）的冪等保證：同一個上傳物件只能對應一張工單。
+-- 前端網路不穩時會自動重送 complete，兩個請求同時通過「先查」時只能靠這個唯一約束擋下
+-- （程式遇到 23505 會回查同路徑的既有工單並回成功）。2026-09-29 已套用正式庫。
+create unique index if not exists work_orders_storage_path_key on work_orders (storage_path);
 
 -- updated_at 自動更新
 create or replace function set_updated_at() returns trigger language plpgsql as $$
@@ -82,6 +86,9 @@ create trigger trg_work_order_no before insert on work_orders
 alter table work_orders enable row level security;
 
 -- ── 私有 Storage bucket（印刷檔）──
-insert into storage.buckets (id, name, public)
-values ('print-files', 'print-files', false)
+-- file_size_limit = 10MB（= lib/upload/limits.ts MAX_UPLOAD_BYTES）：客人是拿伺服器簽的一次性網址直傳進來，
+-- 這個上限讓外流的上傳網址也傳不了更大的檔。既有專案已於 2026-09-29 用 Storage API
+-- （PUT /storage/v1/bucket/print-files，service_role）設定；這裡只影響新建環境（on conflict do nothing）。
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('print-files', 'print-files', false, 10485760)
 on conflict (id) do nothing;

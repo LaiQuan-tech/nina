@@ -4,8 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import type { ParseResult } from "@/lib/filename/publicTypes";
 import { EXT_ALLOW, EXT_ALLOW_LABEL } from "@/lib/filename/segments";
 import { summarizeUploadBatch, type UploadBatchSummary } from "@/lib/upload/completion";
+import { tooLargeMessage, uploadViaTicket, type MsgLink } from "@/lib/upload/client";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from "@/lib/upload/limits";
 
-type Msg = { role: "user" | "model"; text: string; tone?: "ok" | "err" };
+// id：需要原地更新的訊息（「收件中…」的上傳進度）才有；links：訊息下方可點的聯絡管道（不進後台對話紀錄）。
+type Msg = { role: "user" | "model"; text: string; tone?: "ok" | "err"; id?: string; links?: MsgLink[] };
+
+const RECEIVING_TEXT = "檔名格式正確 ✅ 收件中…";
 
 const EXAMPLE = "069871_{(月匯)百陽廣告}_(78)20260625WG星雲AI地板90x100cmpvc+霧-1CCPVC720N10M.ai";
 
@@ -108,27 +113,41 @@ export default function ChatUpload({
         return false;
       }
 
-      // 3) 檔名正確 → 真正上傳（帶 sessionId）
-      add({ role: "model", tone: "ok", text: "檔名格式正確 ✅ 收件中…" });
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("sessionId", sessionId);
-      const up = (await fetch("/api/upload", { method: "POST", body: fd }).then((r) => r.json())) as {
-        ok: boolean;
-        error?: string;
-      };
+      // 3) 檔名正確 → 先看大小：超過上限就不上傳，告訴客人實際大小、上限與替代管道
+      if (file.size > MAX_UPLOAD_BYTES) {
+        const tooLarge = tooLargeMessage(file.size);
+        add({ role: "model", tone: "err", text: tooLarge.text, links: tooLarge.links });
+        return false;
+      }
 
-      if (up.ok) {
+      // 4) 直傳：票券 → 瀏覽器直接 PUT 到 Supabase Storage（進度更新在「收件中…」這則）→ 通知伺服器建單。
+      //    檔案不經過 Vercel 函式（請求主體上限 4.5MB），伺服器只負責簽發與建單，並在兩端都再驗一次檔名與大小。
+      const progressId = `recv-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      add({ role: "model", tone: "ok", text: RECEIVING_TEXT, id: progressId });
+      let lastPct = -1;
+      const outcome = await uploadViaTicket(file, sessionId, (fraction) => {
+        const pct = Math.min(100, Math.max(0, Math.floor(fraction * 100)));
+        if (pct === lastPct) return;
+        lastPct = pct;
+        // 只改畫面、不同步對話紀錄（進度事件很密）；下一則訊息 add() 時會連同最後的百分比一起記錄
+        setMsgs((prev) => prev.map((m) => (m.id === progressId ? { ...m, text: `${RECEIVING_TEXT} ${pct}%` } : m)));
+      });
+
+      if (outcome.kind === "ok") {
         add({
           role: "model",
           tone: "ok",
           text: `✅ 送件成功！已收到您的檔案（${file.name}），我們會盡快為您處理。若還有其他檔案，可以繼續上傳。`,
         });
         return true;
-      } else {
-        add({ role: "model", tone: "err", text: "收件失敗，請稍後再試一次。" });
+      }
+      if (outcome.kind === "too_large") {
+        const tooLarge = tooLargeMessage(file.size);
+        add({ role: "model", tone: "err", text: tooLarge.text, links: tooLarge.links });
         return false;
       }
+      add({ role: "model", tone: "err", text: "收件失敗，請稍後再試一次。" });
+      return false;
     } catch {
       add({ role: "model", tone: "err", text: "連線出了點問題，請稍後再試一次。" });
       return false;
@@ -162,6 +181,21 @@ export default function ChatUpload({
             style={{ margin: 0, ...(m.tone === "ok" ? { background: "var(--mei-ink)", color: "var(--mei-paper)" } : {}) }}
           >
             {m.text}
+            {m.links && m.links.length > 0 && (
+              <span style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px", marginTop: 6 }}>
+                {m.links.map((l) => (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    target={l.href.startsWith("http") ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    style={{ color: "inherit", fontWeight: 600, textDecoration: "underline" }}
+                  >
+                    {l.label}
+                  </a>
+                ))}
+              </span>
+            )}
           </p>
         ))}
         {busy && (
@@ -193,6 +227,8 @@ export default function ChatUpload({
         選擇印刷檔上傳（可多選，或拖曳到這裡）
       </button>
       <p className="mei-mono-s" style={{ marginTop: 9 }}>
+        單檔上限 {MAX_UPLOAD_LABEL}
+        <br />
         正確檔名範例：{EXAMPLE}
       </p>
     </div>

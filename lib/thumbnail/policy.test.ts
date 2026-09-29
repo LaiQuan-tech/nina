@@ -184,7 +184,11 @@ test("truncateThumbnailError：過長的錯誤訊息截短（它會進條件式 
 });
 
 test("租約一定要長於所有會持有租約的函式 maxDuration（產圖端點、收檔路由），否則還在跑就會被別人重搶", () => {
-  for (const file of ["app/api/admin/order/[id]/thumbnail/generate/route.ts", "app/api/upload/route.ts"]) {
+  for (const file of [
+    "app/api/admin/order/[id]/thumbnail/generate/route.ts",
+    "app/api/upload/route.ts",
+    "app/api/upload/complete/route.ts",
+  ]) {
     const src = readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
     const m = src.match(/export const maxDuration = (\d+);/);
     assert.ok(m, `${file} 必須明訂 maxDuration`);

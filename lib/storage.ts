@@ -1,25 +1,11 @@
 import { createAdminSupabase } from "@/lib/supabase";
+import { isGeneratedPrintFilePath, newPrintFilePath } from "@/lib/upload/path";
 
 // 印刷檔：私有 Supabase Storage bucket "print-files"。
-// 上傳走 service_role、下載一律簽名 URL（bucket 不公開）。
+// 上傳走 service_role（舊 /api/upload）或伺服器簽發的一次性上傳網址（直傳，見 lib/upload/flow.ts）；
+// 下載一律簽名 URL（bucket 不公開）。bucket 的 file_size_limit = 10MB（= lib/upload/limits.ts MAX_UPLOAD_BYTES）。
 
 const BUCKET = "print-files";
-
-/**
- * 檔名淨化（路徑穿越防護）：先去掉任何路徑段（/ 與 \），再只留安全字元
- * [A-Za-z0-9._-]、折疊連續點、去掉開頭的 . _ -；保尾端 80 字（副檔名在尾端）。
- * 全部被濾掉（如純中文檔名）→ 退為 "file"，唯一性由呼叫端的隨機前綴保證。
- * 註：完整原始檔名（含中文）另存 work_orders.file_name，工單顯示用。
- */
-function safeFileName(fileName: string): string {
-  const base = String(fileName ?? "").split(/[/\\]/).pop() ?? "";
-  const cleaned = base
-    .replace(/[^A-Za-z0-9._-]/g, "_")
-    .replace(/\.{2,}/g, ".")
-    .replace(/^[._-]+/, "");
-  const trimmed = cleaned.slice(-80);
-  return trimmed || "file";
-}
 
 /**
  * 上傳印刷檔到私有 bucket，路徑 `orders/<yyyymm>/<rand>-<safe fileName>`。
@@ -35,10 +21,7 @@ export async function uploadPrintFile(
   const size = bytes instanceof ArrayBuffer ? bytes.byteLength : bytes.length;
   if (!bytes || size === 0) return null;
 
-  const now = new Date();
-  const yyyymm = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
-  const rand = globalThis.crypto.randomUUID().replace(/-/g, "").slice(0, 10);
-  const path = `orders/${yyyymm}/${rand}-${safeFileName(fileName)}`;
+  const path = newPrintFilePath(fileName);
 
   try {
     const { error } = await supabase.storage.from(BUCKET).upload(path, bytes, {
@@ -87,6 +70,75 @@ export async function printFileSize(storagePath: string): Promise<number | null>
   } catch (err) {
     console.error("[storage] printFileSize failed:", err);
     return null;
+  }
+}
+
+/**
+ * 直傳用：替伺服器分配好的路徑簽一次性上傳網址（Supabase 預設效期 2 小時），瀏覽器直接 PUT 檔案上去，
+ * 檔案不經過 Vercel 函式。upsert:false → 這個網址不能覆寫已存在的物件。
+ * 只接受 newPrintFilePath 產生的路徑（orders/…），縮圖等其他路徑一律不簽。成功回絕對網址，失敗回 null。
+ */
+export async function createPrintFileUploadUrl(storagePath: string): Promise<string | null> {
+  if (!isGeneratedPrintFilePath(storagePath)) return null;
+  const supabase = createAdminSupabase();
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.storage.from(BUCKET).createSignedUploadUrl(storagePath, { upsert: false });
+    if (error || !data?.signedUrl) {
+      console.error("[storage] createPrintFileUploadUrl failed:", error?.message ?? "no signedUrl");
+      return null;
+    }
+    return data.signedUrl;
+  } catch (err) {
+    console.error("[storage] createPrintFileUploadUrl failed:", err);
+    return null;
+  }
+}
+
+export type PrintFileStat = { status: "found"; size: number } | { status: "missing" } | { status: "error" };
+
+// Storage 找不到物件時回 HTTP 400、body 的 statusCode 才是 "404"（2026-09-29 實測）；新版可能直接回 404，兩種都認。
+function isStorageNotFound(error: unknown): boolean {
+  const e = (error ?? {}) as { status?: unknown; statusCode?: unknown };
+  return e.status === 404 || e.statusCode === "404" || e.statusCode === 404;
+}
+
+/**
+ * 直傳完成時確認物件真的在、以及實際大小（GET /object/info，不下載）。
+ * 跟 printFileSize 不同：要分得出「不存在」與「Storage 出錯」——前者是客人沒傳成，後者要讓客人重試。
+ */
+export async function statPrintFile(storagePath: string): Promise<PrintFileStat> {
+  const supabase = createAdminSupabase();
+  if (!supabase || !storagePath) return { status: "error" };
+  try {
+    const { data, error } = await supabase.storage.from(BUCKET).info(storagePath);
+    if (error) return isStorageNotFound(error) ? { status: "missing" } : { status: "error" };
+    const size = data?.size;
+    return typeof size === "number" && Number.isFinite(size) ? { status: "found", size } : { status: "error" };
+  } catch (err) {
+    console.error("[storage] statPrintFile failed:", err);
+    return { status: "error" };
+  }
+}
+
+/**
+ * 刪掉一個直傳進來、但驗收沒過（超過上限／大小與票券不符）的印刷檔，不留孤兒。
+ * 只刪 newPrintFilePath 格式的路徑；縮圖（thumbs/）與其他路徑永遠不經過這支。失敗只記 log、回 false。
+ */
+export async function removeUploadedPrintFile(storagePath: string): Promise<boolean> {
+  if (!isGeneratedPrintFilePath(storagePath)) return false;
+  const supabase = createAdminSupabase();
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.storage.from(BUCKET).remove([storagePath]);
+    if (error) {
+      console.error("[storage] removeUploadedPrintFile failed:", error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("[storage] removeUploadedPrintFile failed:", err);
+    return false;
   }
 }
 

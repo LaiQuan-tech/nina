@@ -236,6 +236,31 @@ export async function createWorkOrder(
 }
 
 /**
+ * 以 storage_path 找既有工單 id（直傳 /api/upload/complete 的冪等判斷：同一個檔已建過單就不再建）。
+ * 查詢本身失敗回 { ok:false }——呼叫端不可把它當成「沒有這張單」，否則會重複建單。
+ * （回傳型別與 lib/upload/flow.ts 的 OrderLookup 相同；這裡不 import 它，因為本檔也會被 client 元件引用。）
+ */
+export async function findWorkOrderIdByStoragePath(
+  storagePath: string
+): Promise<{ ok: true; id: string | null } | { ok: false }> {
+  const db = createAdminSupabase();
+  if (!db || !storagePath) return { ok: false };
+  try {
+    const { data, error } = await db
+      .from("work_orders")
+      .select("id")
+      .eq("storage_path", storagePath)
+      .order("created_at", { ascending: true })
+      .limit(1);
+    if (error) return { ok: false };
+    const id = (data?.[0] as { id?: string } | undefined)?.id;
+    return { ok: true, id: typeof id === "string" ? id : null };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/**
  * 把「一次查回兩種 kind」的明細拆成加工說明／配件兩組，各自保持原本（sort 升冪）的順序。
  * 工單詳情頁用：一個查詢取代以前 kind=processing、kind=accessory 各查一次。
  */

@@ -42,7 +42,10 @@ Next.js 14 App Router + Supabase + Gemini。
 客戶只看到「送件成功／失敗」，**看不到工單**。案件與對話存 `intake_sessions`。
 
 **驗證是 deterministic**：`lib/filename/parser.ts` 是唯一真相，Gemini 只把錯誤潤飾成親切引導。
-`app/api/upload/route.ts` **伺服器端會再驗一次，永不信任前端**。
+收檔走**直傳**（檔案不經過 Vercel 函式，它的請求主體上限是 4.5MB）：`/api/upload/ticket` 伺服器重驗檔名／副檔名／大小、
+簽 Supabase 一次性上傳網址＋上傳票券 → 瀏覽器 PUT 到 Storage → `/api/upload/complete` 驗票、冪等、建單（流程見 `lib/upload/flow.ts`）。
+單檔上限 **10 MB**（`lib/upload/limits.ts`，`print-files` 儲存桶 `file_size_limit` 同值）。舊的 multipart `app/api/upload/route.ts`
+保留給還開著舊頁面的客人（實際只收得了 < 4.5MB）。兩條路 **伺服器端都會再驗一次，永不信任前端**。
 要改命名規則只需改 `lib/filename/segments.ts` 這張設定表。
 
 正確檔名範例：
